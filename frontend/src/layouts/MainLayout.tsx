@@ -18,7 +18,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
       <Navbar />
 
-      <main className="p-6">
+      <main className="p-4">
         {children}
       </main>
     </div>
