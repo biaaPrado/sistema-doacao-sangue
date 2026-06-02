@@ -1,3 +1,5 @@
+import type { Doacao } from "./Doacao";
+
 export interface Doador {
   nome: string;
   cpf: string;
@@ -8,4 +10,6 @@ export interface Doador {
   email: string;
   tipoSanguineo: string;
   fatorRh: string;
+
+  historicoDoacoes: Doacao[];
 }

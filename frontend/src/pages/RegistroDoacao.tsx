@@ -1,15 +1,17 @@
 import { MainLayout } from "../layouts/MainLayout";
-import { DoadorForm } from "../components/Forms/DoadorForm";
+import { DoacaoForm } from "../components/Forms/DoacaoForm";
 
-export function CadastroDoador() {
+export function RegistroDoacao() {
   return (
     <MainLayout>
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-md">
+
         <h1 className="text-2xl font-bold text-red-700 mb-6">
-          Cadastro de Doador
+          Registro de Doação
         </h1>
 
-        <DoadorForm />
+        <DoacaoForm />
+
       </div>
     </MainLayout>
   );

@@ -1,21 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Input } from "../Input/Input";
 import { Select } from "../Select/Select";
 import { IMaskInput } from "react-imask";
+import { useDoadores } from "../../context/DoadorContext";
 
-interface Doador {
-  nome: string;
-  cpf: string;
-  telefone: string;
-  email: string;
-  dataNascimento: string;
-  sexo: string;
-  peso: number;
-  tipoSanguineo: string;
-  fatorRh: string;
-}
+import type { Doador } from "../../types/Doador"; // ajuste o path se necessário
 
 export function DoadorForm() {
+  const navigate = useNavigate();
+
+  const {
+    addDoador,
+    atualizarDoador,
+    doadorEmEdicao,
+    setDoadorEmEdicao,
+  } = useDoadores();
+
   const [doador, setDoador] = useState<Doador>({
     nome: "",
     cpf: "",
@@ -25,61 +26,97 @@ export function DoadorForm() {
     sexo: "",
     peso: 0,
     tipoSanguineo: "",
-    fatorRh: ""
+    fatorRh: "",
+    historicoDoacoes: []
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  function handleChange(
-    event: React.ChangeEvent<HTMLInputElement>
-  ) {
+  useEffect(() => {
+    if (doadorEmEdicao) {
+      setDoador({
+        ...doadorEmEdicao,
+        historicoDoacoes: doadorEmEdicao.historicoDoacoes ?? []
+      });
+    }
+  }, [doadorEmEdicao]);
+
+  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
 
     setDoador((prev) => ({
       ...prev,
       [name]: name === "peso" ? Number(value) : value
     }));
+
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   }
 
   function validate() {
     const newErrors: Record<string, string> = {};
 
-    if (!doador.nome) newErrors.nome = "Nome obrigatório";
-    if (!doador.cpf) newErrors.cpf = "CPF obrigatório";
-    if (!doador.telefone) newErrors.telefone = "Telefone obrigatório";
+    if (!doador.nome.trim()) newErrors.nome = "Nome obrigatório";
+    if (!doador.cpf.trim()) newErrors.cpf = "CPF obrigatório";
+    if (!doador.telefone.trim()) newErrors.telefone = "Telefone obrigatório";
     if (!doador.email.includes("@")) newErrors.email = "Email inválido";
     if (doador.peso <= 0) newErrors.peso = "Peso inválido";
     if (!doador.tipoSanguineo) newErrors.tipoSanguineo = "Obrigatório";
     if (!doador.fatorRh) newErrors.fatorRh = "Obrigatório";
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   }
 
   function handleSubmit() {
     if (!validate()) return;
 
-    console.log("Doador válido:", doador);
+    if (doadorEmEdicao) {
+      atualizarDoador(doadorEmEdicao.cpf, {
+        ...doador,
+        historicoDoacoes: doador.historicoDoacoes ?? []
+      });
+
+      setDoadorEmEdicao(null);
+      navigate("/doadores");
+    } else {
+      addDoador({
+        ...doador,
+        historicoDoacoes: []
+      });
+
+      navigate("/doadores");
+    }
+
+    setDoador({
+      nome: "",
+      cpf: "",
+      telefone: "",
+      email: "",
+      dataNascimento: "",
+      sexo: "",
+      peso: 0,
+      tipoSanguineo: "",
+      fatorRh: "",
+      historicoDoacoes: []
+    });
   }
 
-  const isValid = Object.keys(errors).length === 0;
+  const isValid =
+    doador.nome.trim() !== "" &&
+    doador.cpf.trim() !== "" &&
+    doador.telefone.trim() !== "" &&
+    doador.email.includes("@") &&
+    doador.peso > 0 &&
+    doador.tipoSanguineo !== "" &&
+    doador.fatorRh !== "";
+
+  const canSubmit = isValid;
 
   return (
     <div className="grid grid-cols-2 gap-4">
 
-      {/* Nome */}
-      <div>
-        <Input
-          label="Nome"
-          name="nome"
-          value={doador.nome}
-          onChange={handleChange}
-        />
-        {errors.nome && <p className="text-red-500 text-sm">{errors.nome}</p>}
-      </div>
+      <Input label="Nome" name="nome" value={doador.nome} onChange={handleChange} />
 
-      {/* CPF */}
       <div>
         <label className="font-medium">CPF</label>
         <IMaskInput
@@ -88,12 +125,10 @@ export function DoadorForm() {
           onAccept={(value) =>
             setDoador((prev) => ({ ...prev, cpf: value }))
           }
-          className="border p-3 rounded-xl w-full"
+          className="border border-gray-300 p-3 rounded-xl w-full"
         />
-        {errors.cpf && <p className="text-red-500 text-sm">{errors.cpf}</p>}
       </div>
 
-      {/* TELEFONE */}
       <div>
         <label className="font-medium">Telefone</label>
         <IMaskInput
@@ -102,25 +137,12 @@ export function DoadorForm() {
           onAccept={(value) =>
             setDoador((prev) => ({ ...prev, telefone: value }))
           }
-          className="border p-3 rounded-xl w-full"
+          className="border border-gray-300 p-3 rounded-xl w-full"
         />
-        {errors.telefone && (
-          <p className="text-red-500 text-sm">{errors.telefone}</p>
-        )}
       </div>
 
-      {/* EMAIL */}
-      <div>
-        <Input
-          label="Email"
-          name="email"
-          value={doador.email}
-          onChange={handleChange}
-        />
-        {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
-      </div>
+      <Input label="Email" name="email" value={doador.email} onChange={handleChange} />
 
-      {/* DATA */}
       <Input
         label="Data de Nascimento"
         type="date"
@@ -129,7 +151,6 @@ export function DoadorForm() {
         onChange={handleChange}
       />
 
-      {/* SEXO */}
       <Select
         label="Sexo"
         name="sexo"
@@ -140,72 +161,47 @@ export function DoadorForm() {
         options={["Masculino", "Feminino", "Outro"]}
       />
 
-      {/* LINHA 3 COLUNAS */}
-      <div className="col-span-2 grid grid-cols-3 gap-4">
+      <Input
+        label="Peso"
+        name="peso"
+        type="number"
+        value={doador.peso}
+        onChange={handleChange}
+      />
 
-        <div>
-          <Input
-            label="Peso"
-            name="peso"
-            type="number"
-            value={doador.peso}
-            onChange={handleChange}
-          />
-          {errors.peso && (
-            <p className="text-red-500 text-sm">{errors.peso}</p>
-          )}
-        </div>
+      <div className="grid grid-cols-2 gap-4j">
+        <Select
+          label="Tipo Sanguíneo"
+          name="tipoSanguineo"
+          value={doador.tipoSanguineo}
+          onChange={(e) =>
+            setDoador((prev) => ({ ...prev, tipoSanguineo: e.target.value }))
+          }
+          options={["A", "B", "AB", "O"]}
+        />
 
-        <div>
-          <Select
-            label="Tipo Sanguíneo"
-            name="tipoSanguineo"
-            value={doador.tipoSanguineo}
-            onChange={(e) =>
-              setDoador((prev) => ({
-                ...prev,
-                tipoSanguineo: e.target.value
-              }))
-            }
-            options={["A", "B", "AB", "O"]}
-          />
-          {errors.tipoSanguineo && (
-            <p className="text-red-500 text-sm">{errors.tipoSanguineo}</p>
-          )}
-        </div>
-
-        <div>
-          <Select
-            label="Fator RH"
-            name="fatorRh"
-            value={doador.fatorRh}
-            onChange={(e) =>
-              setDoador((prev) => ({
-                ...prev,
-                fatorRh: e.target.value
-              }))
-            }
-            options={["+", "-"]}
-          />
-          {errors.fatorRh && (
-            <p className="text-red-500 text-sm">{errors.fatorRh}</p>
-          )}
-        </div>
-
+        <Select
+          label="Fator RH"
+          name="fatorRh"
+          value={doador.fatorRh}
+          onChange={(e) =>
+            setDoador((prev) => ({ ...prev, fatorRh: e.target.value }))
+          }
+          options={["+", "-"]}
+        />  
       </div>
 
-      {/* BOTÃO */}
       <div className="col-span-2 mt-6">
         <button
           onClick={handleSubmit}
-          disabled={!isValid}
+          disabled={!canSubmit}
           className={`w-full py-3 rounded-xl font-semibold transition ${
-            isValid
+            canSubmit
               ? "bg-red-600 hover:bg-red-700 text-white"
               : "bg-gray-300 text-gray-600 cursor-not-allowed"
           }`}
         >
-          Cadastrar Doador
+          {doadorEmEdicao ? "Atualizar Doador" : "Cadastrar Doador"}
         </button>
       </div>
 
