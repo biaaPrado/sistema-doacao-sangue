@@ -1,14 +1,20 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { useDoadores } from "../context/DoadorContext";
 
 export function DoadorDetalhe() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { doadores } = useDoadores();
 
   const doador = doadores.find(
     (d) => d.cpf === id
   );
+
+  function formatarData(data: string) {
+    const [ano, mes, dia] = data.split("-");
+    return `${dia}/${mes}/${ano}`;
+  }
 
   if (!doador) {
     return (
@@ -20,6 +26,14 @@ export function DoadorDetalhe() {
 
   return (
     <MainLayout>
+
+      <button
+        onClick={() => navigate("/doadores")}
+        className="mb-4 flex items-center gap-2 bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition font-medium"
+      >
+        ← Voltar para Lista
+      </button>
+
       <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-md">
 
         {/* HEADER */}
@@ -28,15 +42,21 @@ export function DoadorDetalhe() {
             <h1 className="text-2xl font-bold text-red-700">
               {doador.nome}
             </h1>
-            <p className="text-gray-500">Detalhes do doador</p>
+
+            <p className="text-gray-500">
+              Detalhes do doador
+            </p>
           </div>
 
           <div className="flex items-center gap-4">
+
             <span className="px-4 py-1 rounded-full bg-red-100 text-red-700 font-semibold">
-              {doador.tipoSanguineo}{doador.fatorRh}
+              {doador.tipoSanguineo}
+              {doador.fatorRh}
             </span>
 
             <div className="bg-red-50 border border-red-100 rounded-xl py-2 px-3">
+
               <p className="text-sm text-gray-500">
                 Total de Doações
               </p>
@@ -44,7 +64,9 @@ export function DoadorDetalhe() {
               <p className="text-xl text-right font-bold text-red-700">
                 {doador.historicoDoacoes?.length || 0}
               </p>
+
             </div>
+
           </div>
         </div>
 
@@ -52,31 +74,52 @@ export function DoadorDetalhe() {
         <div className="grid grid-cols-2 gap-4 mb-6">
 
           <div className="bg-gray-50 p-4 rounded-xl">
-            <p className="text-sm text-gray-500">CPF</p>
-            <p className="font-medium">{doador.cpf}</p>
+            <p className="text-sm text-gray-500">
+              CPF
+            </p>
+
+            <p className="font-medium">
+              {doador.cpf}
+            </p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-xl">
-            <p className="text-sm text-gray-500">Telefone</p>
-            <p className="font-medium">{doador.telefone}</p>
+            <p className="text-sm text-gray-500">
+              Telefone
+            </p>
+
+            <p className="font-medium">
+              {doador.telefone}
+            </p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-xl">
-            <p className="text-sm text-gray-500">Email</p>
-            <p className="font-medium">{doador.email}</p>
+            <p className="text-sm text-gray-500">
+              Email
+            </p>
+
+            <p className="font-medium">
+              {doador.email}
+            </p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-xl">
-            <p className="text-sm text-gray-500">Peso</p>
-            <p className="font-medium">{doador.peso} kg</p>
+            <p className="text-sm text-gray-500">
+              Peso
+            </p>
+
+            <p className="font-medium">
+              {doador.peso} kg
+            </p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-xl col-span-2">
             <p className="text-sm text-gray-500">
               Data de nascimento
             </p>
+
             <p className="font-medium">
-              {doador.dataNascimento}
+              {formatarData(doador.dataNascimento)}
             </p>
           </div>
 
@@ -84,6 +127,7 @@ export function DoadorDetalhe() {
 
         {/* HISTÓRICO */}
         <div className="mt-8">
+
           <h2 className="text-xl font-semibold text-red-700 mb-4">
             Histórico de Doações
           </h2>
@@ -96,24 +140,37 @@ export function DoadorDetalhe() {
                   key={index}
                   className="grid grid-cols-3 gap-4 p-4 border-b border-gray-200 last:border-b-0"
                 >
+
                   <div>
-                    <p className="text-xs text-gray-500">Data</p>
+                    <p className="text-xs text-gray-500">
+                      Data
+                    </p>
+
                     <p className="font-medium">
-                      {new Date(doacao.data).toLocaleDateString("pt-BR")}
+                      {formatarData(doacao.data)}
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-xs text-gray-500">Local</p>
-                    <p className="font-medium">{doacao.local}</p>
+                    <p className="text-xs text-gray-500">
+                      Local
+                    </p>
+
+                    <p className="font-medium">
+                      {doacao.local}
+                    </p>
                   </div>
 
                   <div>
-                    <p className="text-xs text-gray-500">Volume</p>
+                    <p className="text-xs text-gray-500">
+                      Volume
+                    </p>
+
                     <p className="font-medium text-red-700">
                       {doacao.volume} ml
                     </p>
                   </div>
+
                 </div>
               ))}
 
@@ -123,9 +180,11 @@ export function DoadorDetalhe() {
               Nenhuma doação registrada.
             </div>
           )}
+
         </div>
 
       </div>
+
     </MainLayout>
   );
 }

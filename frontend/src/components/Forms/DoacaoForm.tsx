@@ -35,6 +35,8 @@ export function DoacaoForm() {
     });
 
     alert("Doação registrada com sucesso!");
+
+    navigate("/doacoes");
   }
 
   return (

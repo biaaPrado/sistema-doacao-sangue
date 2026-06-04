@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Home } from "../pages/Home";
 import { ListaDoadores } from "../pages/ListaDoadores";
 import { CadastroDoador } from "../pages/CadastroDoador";
-// import { Doacoes } from "../pages/Doacoes";
+import { HistoricoDoacoes } from "../pages/HistoricoDoacoes";
 import { DoadorDetalhe } from "../pages/DoadorDetalhe";
 import { RegistroDoacao } from "../pages/RegistroDoacao";
 
@@ -17,7 +17,7 @@ export function AppRoutes() {
 
         <Route path="/cadastro-doador" element={<CadastroDoador />} />
 
-        {/* <Route path="/doacoes" element={<Doacoes />} /> */}
+        <Route path="/doacoes" element={<HistoricoDoacoes />} />
 
         <Route path="/doadores/:id" element={<DoadorDetalhe />} />
 

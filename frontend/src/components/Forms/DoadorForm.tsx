@@ -77,6 +77,7 @@ export function DoadorForm() {
       });
 
       setDoadorEmEdicao(null);
+      alert("Doador atualizado com sucesso!");
       navigate("/doadores");
     } else {
       addDoador({
@@ -84,6 +85,7 @@ export function DoadorForm() {
         historicoDoacoes: []
       });
 
+      alert("Doador cadastrado com sucesso!");
       navigate("/doadores");
     }
 
