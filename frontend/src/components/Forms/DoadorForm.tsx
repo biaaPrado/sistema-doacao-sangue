@@ -4,12 +4,10 @@ import { Input } from "../Input/Input";
 import { Select } from "../Select/Select";
 import { IMaskInput } from "react-imask";
 import { useDoadores } from "../../context/DoadorContext";
-
-import type { Doador } from "../../types/Doador"; // ajuste o path se necessário
+import type { Doador } from "../../types/Doador"; 
 
 export function DoadorForm() {
   const navigate = useNavigate();
-
   const {
     addDoador,
     atualizarDoador,
@@ -33,22 +31,14 @@ export function DoadorForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (doadorEmEdicao) {
-      setDoador({
-        ...doadorEmEdicao,
-        historicoDoacoes: doadorEmEdicao.historicoDoacoes ?? []
-      });
+    if (doadorEmEdicao) { 
+      setDoador({...doadorEmEdicao, historicoDoacoes: doadorEmEdicao.historicoDoacoes ?? []});
     }
   }, [doadorEmEdicao]);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
-
-    setDoador((prev) => ({
-      ...prev,
-      [name]: name === "peso" ? Number(value) : value
-    }));
-
+    setDoador((prev) => ({ ...prev,[name]: name === "peso" ? Number(value) : value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   }
 
@@ -71,20 +61,12 @@ export function DoadorForm() {
     if (!validate()) return;
 
     if (doadorEmEdicao) {
-      atualizarDoador(doadorEmEdicao.cpf, {
-        ...doador,
-        historicoDoacoes: doador.historicoDoacoes ?? []
-      });
-
+      atualizarDoador(doadorEmEdicao.cpf, {...doador, historicoDoacoes: doador.historicoDoacoes ?? []});
       setDoadorEmEdicao(null);
       alert("Doador atualizado com sucesso!");
       navigate("/doadores");
     } else {
-      addDoador({
-        ...doador,
-        historicoDoacoes: []
-      });
-
+      addDoador({ ...doador, historicoDoacoes: []});
       alert("Doador cadastrado com sucesso!");
       navigate("/doadores");
     }
@@ -116,7 +98,6 @@ export function DoadorForm() {
 
   return (
     <div className="grid grid-cols-2 gap-4">
-
       <Input label="Nome" name="nome" value={doador.nome} onChange={handleChange} />
 
       <div>
@@ -124,9 +105,7 @@ export function DoadorForm() {
         <IMaskInput
           mask="000.000.000-00"
           value={doador.cpf}
-          onAccept={(value) =>
-            setDoador((prev) => ({ ...prev, cpf: value }))
-          }
+          onAccept={(value) => setDoador((prev) => ({ ...prev, cpf: value })) }
           className="border border-gray-300 p-3 rounded-xl w-full"
         />
       </div>
@@ -136,9 +115,7 @@ export function DoadorForm() {
         <IMaskInput
           mask="(00) 00000-0000"
           value={doador.telefone}
-          onAccept={(value) =>
-            setDoador((prev) => ({ ...prev, telefone: value }))
-          }
+          onAccept={(value) => setDoador((prev) => ({ ...prev, telefone: value })) }
           className="border border-gray-300 p-3 rounded-xl w-full"
         />
       </div>
@@ -157,9 +134,7 @@ export function DoadorForm() {
         label="Sexo"
         name="sexo"
         value={doador.sexo}
-        onChange={(e) =>
-          setDoador((prev) => ({ ...prev, sexo: e.target.value }))
-        }
+        onChange={(e) => setDoador((prev) => ({ ...prev, sexo: e.target.value })) }
         options={["Masculino", "Feminino", "Outro"]}
       />
 
@@ -176,9 +151,7 @@ export function DoadorForm() {
           label="Tipo Sanguíneo"
           name="tipoSanguineo"
           value={doador.tipoSanguineo}
-          onChange={(e) =>
-            setDoador((prev) => ({ ...prev, tipoSanguineo: e.target.value }))
-          }
+          onChange={(e) => setDoador((prev) => ({ ...prev, tipoSanguineo: e.target.value })) }
           options={["A", "B", "AB", "O"]}
         />
 
@@ -186,9 +159,7 @@ export function DoadorForm() {
           label="Fator RH"
           name="fatorRh"
           value={doador.fatorRh}
-          onChange={(e) =>
-            setDoador((prev) => ({ ...prev, fatorRh: e.target.value }))
-          }
+          onChange={(e) => setDoador((prev) => ({ ...prev, fatorRh: e.target.value })) }
           options={["+", "-"]}
         />  
       </div>
@@ -197,16 +168,10 @@ export function DoadorForm() {
         <button
           onClick={handleSubmit}
           disabled={!canSubmit}
-          className={`w-full py-3 rounded-xl font-semibold transition ${
-            canSubmit
-              ? "bg-red-600 hover:bg-red-700 text-white"
-              : "bg-gray-300 text-gray-600 cursor-not-allowed"
-          }`}
-        >
-          {doadorEmEdicao ? "Atualizar Doador" : "Cadastrar Doador"}
+          className={`w-full py-3 rounded-xl font-semibold transition ${ canSubmit ? "bg-red-600 hover:bg-red-700 text-white" : "bg-gray-300 text-gray-600 cursor-not-allowed" }`}
+        > {doadorEmEdicao ? "Atualizar Doador" : "Cadastrar Doador"}
         </button>
       </div>
-
     </div>
   );
 }

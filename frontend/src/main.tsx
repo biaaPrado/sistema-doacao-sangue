@@ -1,13 +1,16 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import { DoadorProvider } from './context/DoadorContext'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import { DoadorProvider } from "./context/DoadorContext";
+import { EstoqueProvider } from "./context/EstoqueContext";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <DoadorProvider>
-      <App />
-    </DoadorProvider>
-  </StrictMode>,
-)
+    <EstoqueProvider>
+      <DoadorProvider>
+        <App />
+      </DoadorProvider>
+    </EstoqueProvider>
+  </StrictMode>
+);

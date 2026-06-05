@@ -20,40 +20,20 @@ export function HistoricoDoacoes() {
       }))
     )
     .filter((doacao) => {
-      const nomeOk = doacao.nomeDoador
-        .toLowerCase()
-        .includes(filtroNome.toLowerCase());
-
-      const tipoOk =
-        filtroTipo === "" ||
-        doacao.tipoSanguineo === filtroTipo;
-
-      const dataOk =
-        filtroData === "" ||
-        doacao.data === filtroData;
-
-      const localOk =
-        filtroLocal === "" ||
-        doacao.local
-          .toLowerCase()
-          .includes(filtroLocal.toLowerCase());
+      const nomeOk = doacao.nomeDoador.toLowerCase().includes(filtroNome.toLowerCase());
+      const tipoOk = filtroTipo === "" || doacao.tipoSanguineo === filtroTipo;
+      const dataOk = filtroData === "" || doacao.data === filtroData;
+      const localOk = filtroLocal === "" || doacao.local.toLowerCase().includes(filtroLocal.toLowerCase());
 
       return nomeOk && tipoOk && dataOk && localOk;
     })
-    .sort(
-      (a, b) =>
-        new Date(b.data).getTime() -
-        new Date(a.data).getTime()
-    );
+    .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
 
   return (
     <MainLayout>
       <div className="max-w-8xl mx-auto bg-white p-8 rounded-2xl shadow-md">
-
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-red-700">
-            Histórico de Doações
-          </h1>
+          <h1 className="text-2xl font-bold text-red-700"> Histórico de Doações </h1>
         </div>
 
         {/* FILTROS */}
@@ -106,73 +86,30 @@ export function HistoricoDoacoes() {
               setFiltroLocal("");
             }}
             className="bg-gray-200 hover:bg-gray-300 rounded-lg border border-gray-300"
-          >
-            Limpar Filtros
+          > Limpar Filtros
           </button>
 
         </div>
 
-        
-
-        {doacoes.length === 0 ? (
-          <p className="text-gray-500">
-            Nenhuma doação encontrada.
-          </p>
-        ) : (
+        {doacoes.length === 0 ? ( <p className="text-gray-500"> Nenhuma doação encontrada </p> ) : (
           <div>
-
             {/* Cabeçalho */}
             <div className="grid grid-cols-5 bg-red-700 text-white font-semibold rounded-t-xl">
-
-              <div className="p-3 text-center">
-                Data
-              </div>
-
-              <div className="p-3 text-center">
-                Doador
-              </div>
-
-              <div className="p-3 text-center">
-                Tipo Sanguíneo
-              </div>
-
-              <div className="p-3 text-center">
-                Local
-              </div>
-
-              <div className="p-3 text-center">
-                Volume
-              </div>
-
+              <div className="p-3 text-center"> Data </div>
+              <div className="p-3 text-center"> Doador </div>
+              <div className="p-3 text-center"> Tipo Sanguíneo </div>
+              <div className="p-3 text-center"> Local </div>
+              <div className="p-3 text-center"> Volume </div>
             </div>
-
+            
             {/* Linhas */}
             {doacoes.map((doacao, index) => (
-              <div
-                key={index}
-                className="grid grid-cols-5 border-b border-gray-200 hover:bg-gray-50"
-              >
-
-                <div className="p-3 text-center">
-                  {doacao.data.split("-").reverse().join("/")}
-                </div>
-
-                <div className="p-3 text-center">
-                  {doacao.nomeDoador}
-                </div>
-
-                <div className="p-3 text-center">
-                  {doacao.tipoSanguineo}
-                </div>
-
-                <div className="p-3 text-center">
-                  {doacao.local}
-                </div>
-
-                <div className="p-3 text-center">
-                  {doacao.volume} ml
-                </div>
-
+              <div key={index} className="grid grid-cols-5 border-b border-gray-200 hover:bg-gray-50" >
+                <div className="p-3 text-center"> {doacao.data.split("-").reverse().join("/")} </div>
+                <div className="p-3 text-center"> {doacao.nomeDoador} </div>
+                <div className="p-3 text-center"> {doacao.tipoSanguineo} </div>
+                <div className="p-3 text-center"> {doacao.local} </div>
+                <div className="p-3 text-center"> {doacao.volume} ml </div>
               </div>
             ))}
 

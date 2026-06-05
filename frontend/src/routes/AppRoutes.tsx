@@ -6,6 +6,7 @@ import { CadastroDoador } from "../pages/CadastroDoador";
 import { HistoricoDoacoes } from "../pages/HistoricoDoacoes";
 import { DoadorDetalhe } from "../pages/DoadorDetalhe";
 import { RegistroDoacao } from "../pages/RegistroDoacao";
+import { Estoque } from "../pages/Estoque";
 
 export function AppRoutes() {
   return (
@@ -21,8 +22,9 @@ export function AppRoutes() {
 
         <Route path="/doadores/:id" element={<DoadorDetalhe />} />
 
-        <Route path="/doacoes/nova" element={<RegistroDoacao />}
-/>
+        <Route path="/doacoes/nova" element={<RegistroDoacao />} />
+
+        <Route path="/estoque" element={<Estoque />} />
       </Routes>
     </BrowserRouter>
   );

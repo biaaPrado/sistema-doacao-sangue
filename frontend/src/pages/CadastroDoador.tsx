@@ -8,7 +8,6 @@ export function CadastroDoador() {
         <h1 className="text-2xl font-bold text-red-700 mb-6">
           Cadastro de Doador
         </h1>
-
         <DoadorForm />
       </div>
     </MainLayout>

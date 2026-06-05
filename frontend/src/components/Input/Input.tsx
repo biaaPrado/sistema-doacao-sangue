@@ -15,11 +15,7 @@ export function Input({
 }: InputProps) {
   return (
     <div className="flex flex-col gap-1 w-full">
-
-      <label className="font-medium text-gray-700">
-        {label}
-      </label>
-
+      <label className="font-medium text-gray-700"> {label} </label>
       <input
         name={name}
         value={value}
@@ -27,7 +23,6 @@ export function Input({
         onChange={onChange}
         className="border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-500"
       />
-
     </div>
   );
 }
