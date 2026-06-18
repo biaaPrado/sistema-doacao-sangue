@@ -3,7 +3,17 @@ interface InputProps {
   name: string;
   value: string | number;
   type?: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => void;
+
+  onBlur?: (
+    e: React.FocusEvent<HTMLInputElement>
+  ) => void;
+
+  disabled?: boolean;
 }
 
 export function Input({
@@ -11,16 +21,22 @@ export function Input({
   name,
   value,
   type = "text",
-  onChange
+  onChange,
+  placeholder,
+  onBlur,
+  disabled = false,
 }: InputProps) {
   return (
     <div className="flex flex-col gap-1 w-full">
       <label className="font-medium text-gray-700"> {label} </label>
       <input
+        type={type}
         name={name}
         value={value}
-        type={type}
+        placeholder={placeholder}
         onChange={onChange}
+        onBlur={onBlur}
+        disabled={disabled}
         className="border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-500"
       />
     </div>

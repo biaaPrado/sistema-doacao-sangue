@@ -66,7 +66,7 @@ export function Estoque() {
                 <div className="p-3 text-center"> Status </div>
               </div>
 
-              {bolsas.sort((a, b) => new Date(a.dataValidade).getTime() - new Date(b.dataValidade).getTime()).map((bolsa) => { 
+              {bolsas.sort((a, b) => new Date(b.dataValidade).getTime() - new Date(a.dataValidade).getTime()).map((bolsa) => { 
                   const diasRestantes = Math.ceil((new Date( bolsa.dataValidade ).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                   const vencida = diasRestantes < 0;
                   const venceEmBreve = diasRestantes <= 7 && !vencida;

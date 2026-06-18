@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { IMaskInput } from "react-imask";
 import { useDoadores } from "../../context/DoadorContext";
 import { useEstoque } from "../../context/EstoqueContext";
+import { useToast } from "../../hooks/useToast";
+import { Toast } from "../Toast/Toast";
 
 export function DoacaoForm() {
   const {doadores, registrarDoacao } = useDoadores();
   const navigate = useNavigate();
   const { adicionarBolsa } = useEstoque();
+  const { toast, showToast } = useToast();
 
   const [cpf, setCpf] = useState("");
   const [form, setForm] = useState({
@@ -51,11 +54,14 @@ export function DoacaoForm() {
       disponivel: true
     });
 
-    alert("Doação registrada com sucesso!");
-    navigate("/doacoes");
+    showToast("Doação registrada com sucesso!", "success", 5000);
+    setTimeout(() => { navigate("/doacoes"); }, 5000);
   }
 
   return (
+    <>
+    {toast && ( <Toast message={toast.message} type={toast.type} duration={toast.duration} /> )}
+
     <div className="grid gap-4">
       {/* CPF */}
       <div>
@@ -197,5 +203,7 @@ export function DoacaoForm() {
         </>
       )}
     </div>
+    </>
   );
+  
 }

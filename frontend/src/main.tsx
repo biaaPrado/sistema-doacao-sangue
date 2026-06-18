@@ -4,13 +4,16 @@ import "./index.css";
 import App from "./App";
 import { DoadorProvider } from "./context/DoadorContext";
 import { EstoqueProvider } from "./context/EstoqueContext";
+import { HospitalProvider } from "./context/HospitalContext";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <EstoqueProvider>
-      <DoadorProvider>
-        <App />
-      </DoadorProvider>
+      <HospitalProvider>
+        <DoadorProvider>
+          <App />
+        </DoadorProvider>
+      </HospitalProvider>
     </EstoqueProvider>
   </StrictMode>
 );

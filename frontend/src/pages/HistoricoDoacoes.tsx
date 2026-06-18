@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { useDoadores } from "../context/DoadorContext";
 
 export function HistoricoDoacoes() {
   const { doadores } = useDoadores();
+  const navigate = useNavigate();
 
   const [filtroNome, setFiltroNome] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
@@ -32,8 +34,14 @@ export function HistoricoDoacoes() {
   return (
     <MainLayout>
       <div className="max-w-8xl mx-auto bg-white p-8 rounded-2xl shadow-md">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-red-700"> Histórico de Doações </h1>
+
+          <button
+            onClick={() => navigate("/doacoes/nova")}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+          > Novo Doador
+          </button>
         </div>
 
         {/* FILTROS */}

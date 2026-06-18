@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import type { BolsaSangue } from "../types/BolsaSangue";
+import { mockBolsas } from "../mocks/mockBolsas";
 
 interface EstoqueContextType {
   bolsas: BolsaSangue[];
@@ -11,7 +12,8 @@ interface EstoqueContextType {
 const EstoqueContext = createContext<EstoqueContextType | null>(null);
 
 export function EstoqueProvider({children,}: {children: React.ReactNode;}) {
-  const [bolsas, setBolsas] = useState<BolsaSangue[]>([]);
+  //const [bolsas, setBolsas] = useState<BolsaSangue[]>([]);
+  const [ bolsas, setBolsas ] = useState<BolsaSangue[]>(mockBolsas);
 
   function adicionarBolsa(bolsa: BolsaSangue) {
     setBolsas((prev) => [...prev, bolsa]);

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import type { Doador } from "../types/Doador";
 import type { Doacao } from "../types/Doacao";
+import { mockDoadores } from "../mocks/mockDoadores";
 
 interface DoadorContextType {
   doadores: Doador[];
@@ -16,7 +17,8 @@ interface DoadorContextType {
 const DoadorContext = createContext<DoadorContextType | null>(null);
 
 export function DoadorProvider({children, }: {children: React.ReactNode;}) {
-  const [doadores, setDoadores] = useState<Doador[]>([]);
+  //const [doadores, setDoadores] = useState<Doador[]>([]);
+  const [ doadores, setDoadores ] = useState<Doador[]>(mockDoadores);
   const [doadorEmEdicao, setDoadorEmEdicao] = useState<Doador | null>(null);
 
   function addDoador(doador: Doador) {

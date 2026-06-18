@@ -37,8 +37,8 @@ export function Navbar() {
         <div className="">
           <h2 className="font-bold text-lg py-2 border-b border-red-700 mb-1"> Hospital </h2>
           <div className="ml-4 flex flex-col gap-1">
-            <Link to="/hospital/cadastro" className="px-3 py-2 rounded-lg hover:bg-red-700"> Cadastrar Hospital </Link>
-            <Link to="/hospital" className="px-3 py-2 rounded-lg hover:bg-red-700" > Lista Hospitais </Link>
+            <Link to="/hospital/novo" className="px-3 py-2 rounded-lg hover:bg-red-700"> Cadastrar Hospital </Link>
+            <Link to="/hospitais" className="px-3 py-2 rounded-lg hover:bg-red-700" > Lista Hospitais </Link>
           </div>
         </div>
       </nav>
