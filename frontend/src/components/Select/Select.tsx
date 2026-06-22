@@ -20,8 +20,7 @@ export function Select({
         name={name}
         value={value}
         onChange={onChange}
-        className="border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-      >
+        className="border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-500" >
         <option value=""> Selecione </option>
         {options.map((option) => ( <option key={option} value={option}> {option} </option> ))}
       </select>

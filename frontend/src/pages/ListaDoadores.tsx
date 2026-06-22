@@ -18,7 +18,6 @@ export function ListaDoadores() {
 
   function editarDoador(index: number) {
     setDoadorEmEdicao(doadores[index]);
-
     navigate("/cadastro-doador");
   }
 
@@ -48,8 +47,8 @@ export function ListaDoadores() {
 
           <button
             onClick={() => navigate("/cadastro-doador")}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-          > Novo Doador
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"> 
+            Novo Doador
           </button>
         </div>
 
@@ -65,8 +64,7 @@ export function ListaDoadores() {
           <select
             value={tipo}
             onChange={(e) => setTipo(e.target.value)}
-            className="border p-2 rounded-lg border-gray-300"
-          >
+            className="border p-2 rounded-lg border-gray-300" >
             <option value=""> Tipo sanguíneo </option>
             <option value="A">A</option>
             <option value="B">B</option>
@@ -77,8 +75,7 @@ export function ListaDoadores() {
           <select
             value={rh}
             onChange={(e) => setRh(e.target.value)}
-            className="border p-2 rounded-lg border-gray-300"
-          >
+            className="border p-2 rounded-lg border-gray-300" >
             <option value=""> Fator RH </option>
             <option value="+">+</option>
             <option value="-">-</option>
@@ -86,14 +83,11 @@ export function ListaDoadores() {
 
           <button
             onClick={limparFiltros}
-            className="bg-gray-200 hover:bg-gray-300 rounded-lg border border-gray-300"
-          > Limpar filtros
+            className="bg-gray-200 hover:bg-gray-300 rounded-lg border border-gray-300"> Limpar filtros
           </button>
         </div>
 
-        {filtrados.length === 0 ? (
-          <p className="text-gray-500"> Nenhum doador encontrado </p>
-        ) : (
+        {filtrados.length === 0 ? ( <p className="text-gray-500"> Nenhum doador encontrado </p> ) : (
           <div>
             <div className="grid grid-cols-5 bg-red-700 text-white font-semibold rounded-t-xl">
               <div className="p-3 text-center"> Nome </div>
@@ -104,33 +98,22 @@ export function ListaDoadores() {
             </div>
 
             {filtrados.map((d, index) => (
-              <div
-                key={d.cpf}
-                onClick={() => navigate(`/doadores/${d.cpf}`) }
-                className="grid grid-cols-5 border-b border-gray-200 cursor-pointer hover:bg-gray-50"
-              >
+              <div key={d.cpf} onClick={() => navigate(`/doadores/${d.cpf}`) } className="grid grid-cols-5 border-b border-gray-200 cursor-pointer hover:bg-gray-50">
                 <div className="p-3 text-center"> {d.nome} </div>
-
                 <div className="p-3 text-center"> {d.cpf} </div>
-
                 <div className="p-3 text-center"> {d.tipoSanguineo}{d.fatorRh} </div>
-
                 <div className="p-3 text-center"> {d.peso} kg </div>
-
                 <div className="p-3 flex justify-center gap-2">
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      editarDoador(index);
-                    }}
-                    className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"
-                  > Editar
+                    onClick={(e) => {e.stopPropagation(); editarDoador(index);}}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"> 
+                    Editar
                   </button>
 
                   <button
                     onClick={(e) => { e.stopPropagation();excluirDoador(index);}}
-                    className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700"
-                  > Excluir
+                    className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700"> 
+                    Excluir
                   </button>
                 </div>
               </div>

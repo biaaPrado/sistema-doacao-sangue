@@ -10,7 +10,6 @@ export function HistoricoDoacoes() {
   const [filtroNome, setFiltroNome] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
   const [filtroData, setFiltroData] = useState("");
-  const [filtroLocal, setFiltroLocal] = useState("");
 
   const doacoes = doadores
     .flatMap((doador) =>
@@ -19,15 +18,13 @@ export function HistoricoDoacoes() {
         nomeDoador: doador.nome,
         cpf: doador.cpf,
         tipoSanguineo: `${doador.tipoSanguineo}${doador.fatorRh}`,
-      }))
-    )
+      })))
     .filter((doacao) => {
       const nomeOk = doacao.nomeDoador.toLowerCase().includes(filtroNome.toLowerCase());
       const tipoOk = filtroTipo === "" || doacao.tipoSanguineo === filtroTipo;
       const dataOk = filtroData === "" || doacao.data === filtroData;
-      const localOk = filtroLocal === "" || doacao.local.toLowerCase().includes(filtroLocal.toLowerCase());
 
-      return nomeOk && tipoOk && dataOk && localOk;
+      return nomeOk && tipoOk && dataOk;
     })
     .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
 
@@ -39,14 +36,12 @@ export function HistoricoDoacoes() {
 
           <button
             onClick={() => navigate("/doacoes/nova")}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-          > Novo Doador
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"> 
+            Nova Doação
           </button>
         </div>
 
-        {/* FILTROS */}
         <div className="grid grid-cols-5 gap-4 mb-4">
-
           <input
             type="text"
             placeholder="Buscar por doador"
@@ -58,8 +53,7 @@ export function HistoricoDoacoes() {
           <select
             value={filtroTipo}
             onChange={(e) => setFiltroTipo(e.target.value)}
-            className="border p-2 rounded-lg border-gray-300"
-          >
+            className="border p-2 rounded-lg border-gray-300" >
             <option value="">Todos os tipos</option>
             <option value="A+">A+</option>
             <option value="A-">A-</option>
@@ -78,49 +72,34 @@ export function HistoricoDoacoes() {
             className="border p-2 rounded-lg border-gray-300"
           />
 
-          <input
-            type="text"
-            placeholder="Local da coleta"
-            value={filtroLocal}
-            onChange={(e) => setFiltroLocal(e.target.value)}
-            className="border p-2 rounded-lg border-gray-300"
-          />
-
           <button
             onClick={() => {
               setFiltroNome("");
               setFiltroTipo("");
               setFiltroData("");
-              setFiltroLocal("");
             }}
-            className="bg-gray-200 hover:bg-gray-300 rounded-lg border border-gray-300"
-          > Limpar Filtros
+            className="bg-gray-200 hover:bg-gray-300 rounded-lg border border-gray-300"> 
+            Limpar Filtros
           </button>
-
         </div>
 
         {doacoes.length === 0 ? ( <p className="text-gray-500"> Nenhuma doação encontrada </p> ) : (
           <div>
-            {/* Cabeçalho */}
-            <div className="grid grid-cols-5 bg-red-700 text-white font-semibold rounded-t-xl">
+            <div className="grid grid-cols-4 bg-red-700 text-white font-semibold rounded-t-xl">
               <div className="p-3 text-center"> Data </div>
               <div className="p-3 text-center"> Doador </div>
               <div className="p-3 text-center"> Tipo Sanguíneo </div>
-              <div className="p-3 text-center"> Local </div>
               <div className="p-3 text-center"> Volume </div>
             </div>
             
-            {/* Linhas */}
             {doacoes.map((doacao, index) => (
-              <div key={index} className="grid grid-cols-5 border-b border-gray-200 hover:bg-gray-50" >
+              <div key={index} className="grid grid-cols-4 border-b border-gray-200 hover:bg-gray-50" >
                 <div className="p-3 text-center"> {doacao.data.split("-").reverse().join("/")} </div>
                 <div className="p-3 text-center"> {doacao.nomeDoador} </div>
                 <div className="p-3 text-center"> {doacao.tipoSanguineo} </div>
-                <div className="p-3 text-center"> {doacao.local} </div>
                 <div className="p-3 text-center"> {doacao.volume} ml </div>
               </div>
             ))}
-
           </div>
         )}
       </div>

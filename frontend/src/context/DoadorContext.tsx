@@ -48,8 +48,7 @@ export function DoadorProvider({children, }: {children: React.ReactNode;}) {
         doadorEmEdicao,
         setDoadorEmEdicao,
       }}
-    >
-      {children}
+    > {children}
     </DoadorContext.Provider>
   );
 }

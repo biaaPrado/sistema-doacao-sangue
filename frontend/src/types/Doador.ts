@@ -1,6 +1,7 @@
 import type { Doacao } from "./Doacao";
 
 export interface Doador {
+  id: string;
   nome: string;
   cpf: string;
   dataNascimento: string;

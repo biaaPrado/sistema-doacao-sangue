@@ -1,15 +1,23 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { Home } from "../pages/Home";
-import { ListaDoadores } from "../pages/ListaDoadores";
 import { CadastroDoador } from "../pages/CadastroDoador";
+import { CadastroHospital } from "../pages/CadastroHospital";
+
+import { RegistrarPedido } from "../pages/RegistraPedido";
+import { AgendaDoacao } from "../pages/AgendaDoacao";
+
 import { HistoricoDoacoes } from "../pages/HistoricoDoacoes";
-import { DoadorDetalhe } from "../pages/DoadorDetalhe";
 import { RegistroDoacao } from "../pages/RegistroDoacao";
 import { Estoque } from "../pages/Estoque";
-import { CadastroHospital } from "../pages/CadastroHospital";
-import { ListaHospitais } from "../pages/ListaHospitais";
+import { DoadorDetalhe } from "../pages/DoadorDetalhe";
 import { HospitalDetalhe } from "../pages/HospitalDetalhe";
+import { PedidoDetalhe } from "../pages/PedidoDetalhe";
+
+import { ListaPedidos } from "../pages/ListaPedidos";
+import { ListaDoadores } from "../pages/ListaDoadores";
+import { ListaHospitais } from "../pages/ListaHospitais";
+import { ListaAgendamentos } from "../pages/ListaAgendamentos";
 
 export function AppRoutes() {
   return (
@@ -17,27 +25,39 @@ export function AppRoutes() {
       <Routes>
         <Route path="/" element={<Home />} />
         
-        /* Rotas do Doador*/ 
+        {/* Rotas do Doador */}
         <Route path="/doadores" element={<ListaDoadores />} />
 
         <Route path="/cadastro-doador" element={<CadastroDoador />} />
 
         <Route path="/doadores/:id" element={<DoadorDetalhe />} />
 
-        /* Rotas de Doações*/ 
+        {/* Rotas de Doações  */}
         <Route path="/doacoes" element={<HistoricoDoacoes />} />
 
         <Route path="/doacoes/nova" element={<RegistroDoacao />} />
 
-        /* Rotas do Estoque*/ 
+        <Route path="/agendar" element={<AgendaDoacao/> } />
+
+        <Route path="/agendamentos" element={<ListaAgendamentos/> } />
+
+        {/* Rotas do Estoque */}
         <Route path="/estoque" element={<Estoque />} />
 
-        /* Rotas do Hospital*/ 
+        {/* Rotas do Hospital */}
         <Route path="/hospital/novo" element={<CadastroHospital />} />
 
         <Route path="/hospitais" element={<ListaHospitais />} />
 
         <Route path="/hospitais/:id" element={<HospitalDetalhe />} />
+
+        {/* Rotas de Pedido */}
+        <Route path="/pedido/novo" element={<RegistrarPedido/>} />
+
+        <Route path="/pedidos" element={<ListaPedidos/>} />
+
+        <Route path="/pedidos/:id" element={<PedidoDetalhe/> } />
+
       </Routes>
     </BrowserRouter>
   );

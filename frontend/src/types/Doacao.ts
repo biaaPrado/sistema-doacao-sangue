@@ -1,8 +1,9 @@
 export interface Doacao {
+  id: string;
+  doadorId: string;
   data: string;
-  local: string;
-  volume?: number;
+  volume: number;
   observacao: string;
   voluntaria: boolean;
-  receptor: string;
+  receptor?: string;
 }

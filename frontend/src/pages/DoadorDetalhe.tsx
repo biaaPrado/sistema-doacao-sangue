@@ -17,7 +17,7 @@ export function DoadorDetalhe() {
   if (!doador) {
     return (
       <MainLayout>
-        <p className="text-gray-500">Doador não encontrado.</p>
+        <p className="text-gray-500">Doador não encontrado</p>
       </MainLayout>
     );
   }
@@ -26,12 +26,11 @@ export function DoadorDetalhe() {
     <MainLayout>
       <button
         onClick={() => navigate("/doadores")}
-        className="mb-4 flex items-center gap-2 bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition font-medium"
-      > ← Voltar para Lista
+        className="mb-4 flex items-center gap-2 bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg transition font-medium" > 
+        ← Voltar para Lista
       </button>
 
       <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-md">
-        {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-red-700"> {doador.nome} </h1>
@@ -48,7 +47,6 @@ export function DoadorDetalhe() {
           </div>
         </div>
 
-        {/* INFO GRID */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-gray-50 p-4 rounded-xl">
             <p className="text-sm text-gray-500"> CPF </p>
@@ -76,7 +74,6 @@ export function DoadorDetalhe() {
           </div>
         </div>
 
-        {/* HISTÓRICO */}
         <div className="mt-8">
           <h2 className="text-xl font-semibold text-red-700 mb-4"> Histórico de Doações </h2>
 
@@ -90,19 +87,13 @@ export function DoadorDetalhe() {
                   </div>
 
                   <div>
-                    <p className="text-xs text-gray-500"> Local </p>
-                    <p className="font-medium"> {doacao.local} </p>
-                  </div>
-
-                  <div>
                     <p className="text-xs text-gray-500"> Volume </p>
                     <p className="font-medium text-red-700"> {doacao.volume} ml </p>
                   </div>
                 </div>
               ))}
             </div>
-          ) : ( <div className="bg-gray-50 rounded-xl p-6 text-center text-gray-500"> Nenhuma doação registrada </div> 
-          )}
+          ) : ( <div className="bg-gray-50 rounded-xl p-6 text-center text-gray-500"> Nenhuma doação registrada </div>)}
         </div>
       </div>
     </MainLayout>
