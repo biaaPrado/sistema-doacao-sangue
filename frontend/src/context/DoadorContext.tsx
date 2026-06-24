@@ -12,6 +12,7 @@ interface DoadorContextType {
   setDoadorEmEdicao: (d: Doador | null) => void;
   atualizarDoador: (cpf: string, d: Doador) => void;
   registrarDoacao: (cpf: string, doacao: Doacao) => void;
+  adicionarDoacaoAoHistorico: (doadorId: string, doacao: Doacao) => void;
 }
 
 const DoadorContext = createContext<DoadorContextType | null>(null);
@@ -37,6 +38,10 @@ export function DoadorProvider({children, }: {children: React.ReactNode;}) {
     setDoadores((prev) => prev.map((d) => d.cpf === cpf ? { ...d, historicoDoacoes: [...(d.historicoDoacoes ?? []), doacao,],}: d));
   }
 
+  function adicionarDoacaoAoHistorico(doadorId: string, doacao: Doacao) {
+    setDoadores((prev) => prev.map((d) => d.id === doadorId ? { ...d, historicoDoacoes: [...d.historicoDoacoes, doacao],}: d));
+  }
+
   return (
     <DoadorContext.Provider
       value={{
@@ -45,6 +50,7 @@ export function DoadorProvider({children, }: {children: React.ReactNode;}) {
         removerDoador,
         atualizarDoador,
         registrarDoacao,
+        adicionarDoacaoAoHistorico,
         doadorEmEdicao,
         setDoadorEmEdicao,
       }}

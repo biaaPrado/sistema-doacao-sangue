@@ -5,11 +5,13 @@ interface InputProps {
   type?: string;
   placeholder?: string;
 
-  onChange: ( e: React.ChangeEvent<HTMLInputElement> ) => void;
-
-  onBlur?: ( e: React.FocusEvent<HTMLInputElement> ) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 
   disabled?: boolean;
+
+  min?: string;
+  max?: string;
 }
 
 export function Input({
@@ -21,10 +23,15 @@ export function Input({
   placeholder,
   onBlur,
   disabled = false,
+  min,
+  max,
 }: InputProps) {
   return (
     <div className="flex flex-col gap-1 w-full">
-      <label className="font-medium text-gray-700"> {label} </label>
+      <label className="font-medium text-gray-700">
+        {label}
+      </label>
+
       <input
         type={type}
         name={name}
@@ -33,6 +40,8 @@ export function Input({
         onChange={onChange}
         onBlur={onBlur}
         disabled={disabled}
+        min={min}
+        max={max}
         className="border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-500"
       />
     </div>

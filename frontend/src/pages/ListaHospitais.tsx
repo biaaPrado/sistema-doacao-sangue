@@ -2,6 +2,7 @@ import { MainLayout } from "../layouts/MainLayout";
 import { useHospitais } from "../context/HospitalContext";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { ConfirmModal } from "../components/ConfirmModal/ConfirmModal";
 
 export function ListaHospitais() {
     const {
@@ -14,9 +15,24 @@ export function ListaHospitais() {
     const [nomeFiltro, setNomeFiltro] = useState(""); 
     const [cidadeFiltro, setCidadeFiltro] = useState("");
 
+    const [modalAberto, setModalAberto] = useState(false);
+    const [hospitalSelecionado, setHospitalSelecionado] = useState<string>("");
+
     function editarHospital(hospital: any) {
         setHospitalEmEdicao(hospital);
         navigate("/hospital/novo");
+    }
+
+    function confirmarExclusao(id: string) {
+        setHospitalSelecionado(id);
+        setModalAberto(true);
+    }
+
+    function excluirHospital() {
+        removerHospital(hospitalSelecionado);
+
+        setHospitalSelecionado("");
+        setModalAberto(false);
     }
 
     const hospitaisFiltrados = hospitais.filter((hospital) =>
@@ -79,13 +95,10 @@ export function ListaHospitais() {
                                     Editar
                                 </button>
 
-                                <button 
-                                    onClick={(e) => { e.stopPropagation();
-                                    if ( window.confirm(`Deseja excluir o hospital ${hospital.nome}?`)) {
-                                        removerHospital(hospital.id);
-                                    }}}
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); confirmarExclusao(hospital.id); }}
                                     className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg">
-                                     Excluir
+                                    Excluir
                                 </button>
                             </div>
                         </div>
@@ -94,6 +107,14 @@ export function ListaHospitais() {
             </div>
             )}
         </div>
+
+        <ConfirmModal
+            isOpen={modalAberto}
+            title="Excluir Hospital"
+            message="Tem certeza que deseja excluir este hospital?"
+            onConfirm={excluirHospital}
+            onCancel={() => { setModalAberto(false); setHospitalSelecionado(""); }}
+        />
     </MainLayout>
   );
 }

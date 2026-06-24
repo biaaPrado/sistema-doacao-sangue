@@ -80,7 +80,7 @@ export function DoadorDetalhe() {
           {doador.historicoDoacoes?.length ? (
             <div className="bg-gray-50 rounded-xl overflow-hidden">
               {doador.historicoDoacoes.map((doacao, index) => (
-                <div key={index} className="grid grid-cols-3 gap-4 p-4 border-b border-gray-200 last:border-b-0" >
+                <div key={index} className="grid grid-cols-2 gap-4 p-4 border-b border-gray-200 last:border-b-0" >
                   <div>
                     <p className="text-xs text-gray-500"> Data </p>
                     <p className="font-medium"> {formatarData(doacao.data)} </p>

@@ -68,7 +68,8 @@ export function Estoque() {
               const venceEmBreve = diasRestantes <= 7 && !vencida;
 
               return (
-                <div key={bolsa.id} className="grid grid-cols-5 border-b border-gray-200 hover:bg-gray-50" >
+                <div key={bolsa.id} className={`grid grid-cols-5 border-gray-200 hover:bg-gray-50
+                  ${vencida ? "opacity-60" : ""} ${venceEmBreve ? "font-medium" : ""} `}>
                   <div className="p-3 text-center"> {bolsa.tipoSanguineo} </div>
                   <div className="p-3 text-center"> {bolsa.dataColeta.split("-").reverse().join("/")} </div>
                   <div className="p-3 text-center"> {bolsa.dataValidade.split("-").reverse().join("/")} </div>

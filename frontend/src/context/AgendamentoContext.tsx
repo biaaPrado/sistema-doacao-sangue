@@ -7,6 +7,7 @@ interface AgendamentoContextType {
     
     atualizarAgendamento: (id: string, agendamentoAtualizado: Agendamento) => void;
     removerAgendamento: (id: string) => void;
+    concluirAgendamento: (id: string) => void;
 
     agendamentoEmEdicao: Agendamento | null;
     setAgendamentoEmEdicao: (agendamento: Agendamento | null) => void;
@@ -36,6 +37,10 @@ export function AgendamentoProvider({children,}: { children: ReactNode; }) {
         setAgendamentos((prev) => prev.filter((agendamento) => agendamento.id !== id));
     }
 
+    function concluirAgendamento(id: string) {
+        setAgendamentos((prev) => prev.map((ag) => ag.id === id ? { ...ag, status: "Concluída" } : ag ));
+}
+
     return (
         <AgendamentoContext.Provider
             value={{
@@ -43,6 +48,7 @@ export function AgendamentoProvider({children,}: { children: ReactNode; }) {
                 addAgendamento,
                 atualizarAgendamento,
                 removerAgendamento,
+                concluirAgendamento,
                 agendamentoEmEdicao,
                 setAgendamentoEmEdicao,
             }}

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { usePedidos } from "../context/PedidoContext";
 import { useHospitais } from "../context/HospitalContext";
+import { ConfirmModal } from "../components/ConfirmModal/ConfirmModal";
 
 export function ListaPedidos() {
     const navigate = useNavigate();
@@ -15,19 +16,44 @@ export function ListaPedidos() {
     const [filtroStatus, setFiltroStatus] = useState("");
     const [filtroPrioridade, setFiltroPrioridade] = useState("");
     
+    const [modalAberto, setModalAberto] = useState(false);
+    const [acaoSelecionada, setAcaoSelecionada] = useState< "Concluído" | "Cancelado" | null >(null);
+    const [pedidoSelecionado, setPedidoSelecionado] = useState("");
+
     function formatarData(data: string) {
         const [ano, mes, dia] = data.split("-");
         return `${dia}/${mes}/${ano}`;
     }
 
-    const pedidosFiltrados = pedidos.filter((pedido) => {const hospital = hospitais.find((h) => h.id === pedido.hospitalId);
-    const matchHospital = hospital?.nome.toLowerCase().includes(filtroHospital.toLowerCase());
-    const matchTipo = filtroTipo? pedido.tipoSanguineo === filtroTipo: true;
-    const matchStatus = filtroStatus? pedido.status === filtroStatus: true;
-    const matchPrioridade = filtroPrioridade? pedido.prioridade === filtroPrioridade: true;
+    function abrirConfirmacao( pedidoId: string, acao: "Concluído" | "Cancelado") {
+        setPedidoSelecionado(pedidoId);
+        setAcaoSelecionada(acao);
+        setModalAberto(true);
+    }
 
-    return (matchHospital && matchTipo && matchStatus && matchPrioridade);
-});
+    function confirmarAcao() {
+        if (!pedidoSelecionado || !acaoSelecionada) return;
+
+        alterarStatus(pedidoSelecionado, acaoSelecionada);
+
+        setModalAberto(false);
+        setPedidoSelecionado("");
+        setAcaoSelecionada(null);
+    }
+
+    const pedidosFiltrados = pedidos
+    .filter((pedido) => {
+        const hospital = hospitais.find((h) => h.id === pedido.hospitalId);
+        const matchHospital = hospital?.nome.toLowerCase().includes(filtroHospital.toLowerCase());
+        const matchTipo = filtroTipo? pedido.tipoSanguineo === filtroTipo: true;
+        const matchStatus = filtroStatus? pedido.status === filtroStatus: true;
+        const matchPrioridade = filtroPrioridade ? pedido.prioridade === filtroPrioridade: true;
+
+        return matchHospital && matchTipo && matchStatus && matchPrioridade;
+    })
+    .sort((a, b) => {
+        return new Date(b.dataPedido).getTime() - new Date(a.dataPedido).getTime();
+    });
 
     return (
         <MainLayout>
@@ -125,13 +151,13 @@ export function ListaPedidos() {
                                     {pedido.status === "Pendente" && (
                                     <>
                                         <button
-                                            onClick={(e) => {e.stopPropagation(); alterarStatus(pedido.id, "Concluído");}}
+                                            onClick={(e) => { e.stopPropagation(); abrirConfirmacao(pedido.id, "Concluído"); }}
                                             className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg" >
                                             Concluir
                                         </button>
 
                                         <button
-                                            onClick={(e) => {e.stopPropagation(); alterarStatus(pedido.id, "Cancelado");}}
+                                            onClick={(e) => { e.stopPropagation(); abrirConfirmacao(pedido.id, "Cancelado"); }}
                                             className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg" >
                                             Cancelar
                                         </button>
@@ -144,6 +170,18 @@ export function ListaPedidos() {
             </div>
         )}
       </div>
+      
+      <ConfirmModal
+        isOpen={modalAberto}
+        title={ acaoSelecionada === "Concluído" ? "Concluir Pedido" : "Cancelar Pedido" }
+        message={ acaoSelecionada === "Concluído" ? "Você está concluindo este pedido, confirmado?" : "Tem certeza que deseja cancelar este pedido?" }
+        onConfirm={confirmarAcao}
+        onCancel={() => {
+            setModalAberto(false);
+            setPedidoSelecionado("");
+            setAcaoSelecionada(null);
+        }}
+      />
     </MainLayout>
   );
 }

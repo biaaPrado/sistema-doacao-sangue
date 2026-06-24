@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Dashboard } from "../pages/Dashboard";
 
-import { Home } from "../pages/Home";
 import { CadastroDoador } from "../pages/CadastroDoador";
 import { CadastroHospital } from "../pages/CadastroHospital";
 
@@ -23,7 +23,7 @@ export function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Dashboard />} />
         
         {/* Rotas do Doador */}
         <Route path="/doadores" element={<ListaDoadores />} />

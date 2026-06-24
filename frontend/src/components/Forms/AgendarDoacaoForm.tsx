@@ -35,9 +35,9 @@ export function AgendarDoacaoForm() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const doadorEncontrado = doadores.find(
-    (d) => d.cpf === cpf
-  );
+  const hoje = new Date().toISOString().split("T")[0];
+
+  const doadorEncontrado = doadores.find((d) => d.cpf === cpf);
 
   useEffect(() => {
     if (agendamentoEmEdicao) {
@@ -53,23 +53,23 @@ export function AgendarDoacaoForm() {
     }
   }, [agendamentoEmEdicao, doadores]);
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
-    const { name, value } = e.target;
+  function validateField(name: string, value: any) {
+    let message = "";
 
-    setAgendamento((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    switch (name) {
+      case "data":
+        if (!value) message = "Informe uma data";
+        else if (value < hoje) message = "Data não pode ser anterior à atual";
+        break;
 
-    setErrors((prev) => ({
-      ...prev,
-      [name]: "",
-    }));
+      case "horario": if (!value) message = "Informe um horário"; break;
+      case "observacao": break;
+    }
+
+    setErrors((prev) => ({...prev, [name]: message,}));
   }
 
-  function validate() {
+  function validateAll() {
     const newErrors: Record<string, string> = {};
 
     if (!doadorEncontrado) {
@@ -78,6 +78,8 @@ export function AgendarDoacaoForm() {
 
     if (!agendamento.data) {
       newErrors.data = "Informe uma data";
+    } else if (agendamento.data < hoje) {
+      newErrors.data = "Data não pode ser anterior à atual";
     }
 
     if (!agendamento.horario) {
@@ -89,61 +91,40 @@ export function AgendarDoacaoForm() {
     return Object.keys(newErrors).length === 0;
   }
 
-  function handleSubmit() {
-    if (!validate() || !doadorEncontrado) return;
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    const { name, value } = e.target;
 
-    const dadosAgendamento: Agendamento = {
-      ...agendamento,
-      doadorId: doadorEncontrado.id,
-    };
+    setAgendamento((prev) => ({...prev, [name]: value, }));
+
+    validateField(name, value);
+  }
+
+  function handleSubmit() {
+    if (!validateAll() || !doadorEncontrado) return;
+
+    const dadosAgendamento: Agendamento = {...agendamento, doadorId: doadorEncontrado.id, };
 
     if (agendamentoEmEdicao) {
-      atualizarAgendamento(
-        agendamentoEmEdicao.id,
-        dadosAgendamento
-      );
+      atualizarAgendamento(agendamentoEmEdicao.id, dadosAgendamento);
 
       setAgendamentoEmEdicao(null);
 
-      showToast(
-        "Agendamento atualizado com sucesso!",
-        "success",
-        4000
-      );
+      showToast("Agendamento atualizado com sucesso!", "success", 4000);
     } else {
-      addAgendamento({
-        ...dadosAgendamento,
-        id: crypto.randomUUID(),
-      });
-
-      showToast(
-        "Doação agendada com sucesso!",
-        "success",
-        4000
-      );
+      addAgendamento({...dadosAgendamento, id: crypto.randomUUID(),});
+      showToast("Doação agendada com sucesso!", "success", 4000);
     }
 
-    setTimeout(() => {
-      navigate("/agendamentos");
-    }, 1200);
+    setTimeout(() => { navigate("/agendamentos"); }, 1200);
   }
 
   return (
     <>
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          duration={toast.duration}
-        />
-      )}
+      {toast && ( <Toast message={toast.message} type={toast.type} duration={toast.duration} /> )}
 
       <div className="grid gap-4">
-
         <div>
-          <label className="font-medium">
-            CPF do Doador
-          </label>
+          <label className="font-medium">CPF do Doador</label>
 
           <IMaskInput
             mask="000.000.000-00"
@@ -151,56 +132,35 @@ export function AgendarDoacaoForm() {
             onAccept={(value) => setCpf(value)}
             className="border border-gray-300 p-3 rounded-xl w-full"
           />
-
-          {errors.doadorId && (
-            <p className="text-red-500 text-sm">
-              {errors.doadorId}
-            </p>
-          )}
+          {errors.doadorId && ( <p className="text-red-500 text-sm">{errors.doadorId}</p> )}
         </div>
 
         {cpf.length === 14 && (
           <>
             {doadorEncontrado ? (
               <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                <p className="font-semibold text-green-700 mb-2">
-                  Doador encontrado
-                </p>
+                <p className="font-semibold text-green-700 mb-2"> Doador encontrado </p>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-gray-500 text-sm">
-                      Nome
-                    </span>
-
-                    <p className="font-medium">
-                      {doadorEncontrado.nome}
-                    </p>
+                    <span className="text-gray-500 text-sm">Nome</span>
+                    <p className="font-medium">{doadorEncontrado.nome}</p>
                   </div>
 
                   <div>
-                    <span className="text-gray-500 text-sm">
-                      Tipo Sanguíneo
-                    </span>
-
-                    <p className="font-medium">
-                      {doadorEncontrado.tipoSanguineo}
-                      {doadorEncontrado.fatorRh}
-                    </p>
+                    <span className="text-gray-500 text-sm">Tipo Sanguíneo</span>
+                    <p className="font-medium"> {doadorEncontrado.tipoSanguineo} {doadorEncontrado.fatorRh} </p>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                <p className="font-semibold text-yellow-700 mb-3">
-                  Doador não encontrado
-                </p>
+                <p className="font-semibold text-yellow-700 mb-3"> Doador não encontrado </p>
 
                 <button
                   type="button"
                   onClick={() => navigate("/cadastro-doador")}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-                >
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg" >
                   Cadastrar Novo Doador
                 </button>
               </div>
@@ -212,29 +172,21 @@ export function AgendarDoacaoForm() {
           <>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="font-medium">
-                  Data da Doação
-                </label>
+                <label className="font-medium">Data da Doação</label>
 
                 <input
                   type="date"
                   name="data"
+                  min={hoje}
                   value={agendamento.data}
                   onChange={handleChange}
                   className="border border-gray-300 p-3 rounded-xl w-full"
                 />
-
-                {errors.data && (
-                  <p className="text-red-500 text-sm">
-                    {errors.data}
-                  </p>
-                )}
+                {errors.data && ( <p className="text-red-500 text-sm">{errors.data}</p> )}
               </div>
 
               <div>
-                <label className="font-medium">
-                  Horário
-                </label>
+                <label className="font-medium">Horário</label>
 
                 <input
                   type="time"
@@ -243,19 +195,12 @@ export function AgendarDoacaoForm() {
                   onChange={handleChange}
                   className="border border-gray-300 p-3 rounded-xl w-full"
                 />
-
-                {errors.horario && (
-                  <p className="text-red-500 text-sm">
-                    {errors.horario}
-                  </p>
-                )}
+                {errors.horario && ( <p className="text-red-500 text-sm">{errors.horario}</p> )}
               </div>
             </div>
 
             <div>
-              <label className="font-medium">
-                Observação
-              </label>
+              <label className="font-medium">Observação</label>
 
               <textarea
                 name="observacao"
@@ -268,11 +213,8 @@ export function AgendarDoacaoForm() {
 
             <button
               onClick={handleSubmit}
-              className="bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-semibold"
-            >
-              {agendamentoEmEdicao
-                ? "Atualizar Agendamento"
-                : "Agendar Doação"}
+              className="bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-semibold" >
+              {agendamentoEmEdicao ? "Atualizar Agendamento" : "Agendar Doação"}
             </button>
           </>
         )}

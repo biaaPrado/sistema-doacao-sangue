@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { useDoadores } from "../context/DoadorContext";
+import { ConfirmModal } from "../components/ConfirmModal/ConfirmModal";
 
 export function ListaDoadores() {
   const {
@@ -16,13 +17,24 @@ export function ListaDoadores() {
   const [tipo, setTipo] = useState("");
   const [rh, setRh] = useState("");
 
+  const [modalAberto, setModalAberto] = useState(false); 
+  const [cpfSelecionado, setCpfSelecionado] = useState("");
+
   function editarDoador(index: number) {
     setDoadorEmEdicao(doadores[index]);
     navigate("/cadastro-doador");
   }
 
-  function excluirDoador(index: number) {
-    removerDoador(doadores[index].cpf);
+  function abrirModalExcluir(index: number) {
+    setCpfSelecionado(doadores[index].cpf);
+    setModalAberto(true);
+  }
+
+  function confirmarExclusao() {
+    removerDoador(cpfSelecionado);
+
+    setModalAberto(false);
+    setCpfSelecionado("");
   }
 
   function limparFiltros() {
@@ -111,8 +123,8 @@ export function ListaDoadores() {
                   </button>
 
                   <button
-                    onClick={(e) => { e.stopPropagation();excluirDoador(index);}}
-                    className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700"> 
+                    onClick={(e) => { e.stopPropagation(); abrirModalExcluir(index); }}
+                    className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700">
                     Excluir
                   </button>
                 </div>
@@ -121,6 +133,14 @@ export function ListaDoadores() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={modalAberto}
+        title="Excluir Doador"
+        message="Tem certeza que deseja excluir este doador? Esta ação não poderá ser desfeita."
+        onConfirm={confirmarExclusao}
+        onCancel={() => { setModalAberto(false); setCpfSelecionado(""); }}
+      />
     </MainLayout>
   );
 }
