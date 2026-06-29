@@ -57,6 +57,10 @@ export default class HemocenterSystem {
         return this.donorService.getAllDonors();
     }
 
+    public getAllDonationsByDonor(donor: Donor): Donation[] {
+        return this.donationService.getDonationsByDonor(donor);
+    }
+
     /*
     ========================================
                 DOAÇÕES
@@ -64,10 +68,27 @@ export default class HemocenterSystem {
     */
 
     public createDonation(donation: Donation): void {
+        const donor = donation.getDonor();
+
+        if (!EligibilityService.canDonate(donor)) {
+            throw new Error('Doador não é elegível para doar sangue');
+        }
+
+        donor.addDonation(donation);
         this.donationService.addDonation(donation);
+
+        const bag = new BloodBag(
+            crypto.randomUUID(),
+            donor.getBloodType(),
+            donation.getDonationDate(),
+            donation.getVolume(),
+            true,
+        );
+
+        this.stockService.addBag(bag);
     }
 
-    public getDonations(): Donation[] {
+    public getAllDonations(): Donation[] {
         return this.donationService.getAll();
     }
 
@@ -107,16 +128,16 @@ export default class HemocenterSystem {
         this.appointmentService.create(appointment);
     }
 
-    public updateAppointment(id: string, appointment: Appointment): boolean {
-        return this.appointmentService.update(id, appointment);
+    public updateAppointment(id: string, appointment: Appointment): void {
+        this.appointmentService.update(id, appointment);
     }
 
-    public cancelAppointment(id: string): boolean {
-        return this.appointmentService.cancel(id);
+    public cancelAppointment(id: string): void {
+        this.appointmentService.cancel(id);
     }
 
-    public removeAppointment(id: string): boolean {
-        return this.appointmentService.remove(id);
+    public removeAppointment(id: string): void {
+        this.appointmentService.remove(id);
     }
 
     public getAppointments(): Appointment[] {
@@ -129,17 +150,17 @@ export default class HemocenterSystem {
     ========================================
     */
 
-    public completeAppointment(id: string): boolean {
+    public completeAppointment(id: string): void {
         const appointment = this.appointmentService.findById(id);
 
         if (!appointment || appointment.getStatus() !== Status.PENDING) {
-            return false;
+            throw new Error('Agendamento não encontrado ou não está pendente');
         }
 
         const donor = appointment.getDonor();
 
         if (!EligibilityService.canDonate(donor)) {
-            return false;
+            throw new Error('Doador não é elegível para doar sangue');
         }
 
         const donation = new Donation(
@@ -148,8 +169,6 @@ export default class HemocenterSystem {
             450,
             appointment.getDate(),
         );
-
-        donor.addDonation(donation);
 
         this.donationService.addDonation(donation);
 
@@ -163,7 +182,7 @@ export default class HemocenterSystem {
 
         this.stockService.addBag(bag);
 
-        return this.appointmentService.complete(id);
+        this.appointmentService.complete(id);
     }
 
     /*
@@ -204,7 +223,7 @@ export default class HemocenterSystem {
     ========================================
     */
 
-    public fulfillRequest(id: string): boolean {
+    public fulfillRequest(id: string): void {
         const request = this.bloodRequestService.findById(id);
 
         if (!request) {
@@ -214,11 +233,11 @@ export default class HemocenterSystem {
         const success = this.distributionService.fulfillRequest(request);
 
         if (!success) {
-            return false;
+            throw new Error(
+                'Não há bolsas de sangue suficientes para atender ao pedido.',
+            );
         }
 
         this.bloodRequestService.changeStatus(id, Status.COMPLETED);
-
-        return true;
     }
 }

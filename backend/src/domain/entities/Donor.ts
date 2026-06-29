@@ -16,10 +16,6 @@ export default class Donor {
         private donations: Donation[],
     ) {}
 
-    public addDonation(donation: Donation): void {
-        this.donations.push(donation);
-    }
-
     // Getters
     public getId(): string {
         return this.id;
@@ -85,5 +81,9 @@ export default class Donor {
 
     public getDonations(): Donation[] {
         return this.donations;
+    }
+
+    public addDonation(donation: Donation): void {
+        this.donations.push(donation);
     }
 }

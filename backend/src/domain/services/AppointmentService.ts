@@ -16,51 +16,43 @@ export default class AppointmentService {
         return this.appointments;
     }
 
-    public update(id: string, appointment: Appointment): boolean {
+    public update(id: string, appointment: Appointment): void {
         const index = this.appointments.findIndex((a) => a.getId() === id);
 
         if (index === -1) {
-            return false;
+            throw new Error('Agendamento não encontrado');
         }
 
         this.appointments[index] = appointment;
-
-        return true;
     }
 
-    public cancel(id: string): boolean {
+    public cancel(id: string): void {
         const appointment = this.findById(id);
 
         if (!appointment) {
-            return false;
+            throw new Error('Agendamento não encontrado');
         }
 
         appointment.setStatus(Status.CANCELED);
-
-        return true;
     }
 
-    public complete(id: string): boolean {
+    public complete(id: string): void {
         const appointment = this.findById(id);
 
         if (!appointment) {
-            return false;
+            throw new Error('Agendamento não encontrado');
         }
 
         appointment.setStatus(Status.COMPLETED);
-
-        return true;
     }
 
-    public remove(id: string): boolean {
+    public remove(id: string): void {
         const index = this.appointments.findIndex((a) => a.getId() === id);
 
         if (index === -1) {
-            return false;
+            throw new Error('Agendamento não encontrado');
         }
 
         this.appointments.splice(index, 1);
-
-        return true;
     }
 }
