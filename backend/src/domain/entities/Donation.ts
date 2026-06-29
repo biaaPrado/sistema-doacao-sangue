@@ -2,13 +2,13 @@ import Donor from './Donor';
 
 export default class Donation {
     constructor(
-        private id: number,
+        private id: string,
         private donor: Donor,
-        private mlQuantity: number,
+        private volume: number,
         private donationDate: Date,
     ) {}
 
-    public getId(): number {
+    public getId(): string {
         return this.id;
     }
 
@@ -16,8 +16,8 @@ export default class Donation {
         return this.donor;
     }
 
-    public getMlQuantity(): number {
-        return this.mlQuantity;
+    public getVolume(): number {
+        return this.volume;
     }
 
     public getDonationDate(): Date {

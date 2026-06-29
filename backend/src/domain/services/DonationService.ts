@@ -1,34 +1,26 @@
+import Donation from '../entities/Donation';
 import Donor from '../entities/Donor';
-import { Sex } from '../enums/Sex';
 
 export default class DonationService {
-    public static canDonate(donor: Donor): boolean {
-        const age = donor.getAge();
+    private donations: Donation[] = [];
 
-        if (age < 18 || age > 69) {
-            return false;
-        }
+    public addDonation(donation: Donation): void {
+        this.donations.push(donation);
+    }
 
-        if (donor.getWeight() < 50) {
-            return false;
-        }
+    public findById(id: string): Donation | null {
+        return (
+            this.donations.find((donation) => donation.getId() === id) ?? null
+        );
+    }
 
-        const lastDonation = donor.getLastDonation();
+    public getAll(): Donation[] {
+        return this.donations;
+    }
 
-        if (lastDonation) {
-            const lastDonationDate = lastDonation.getDonationDate();
-            const diffDays = Math.floor(
-                (new Date().getTime() -
-                    lastDonation.getDonationDate().getTime()) /
-                    (1000 * 60 * 60 * 24),
-            );
-
-            if (donor.getSex() === Sex.MALE && diffDays < 60) {
-                return false;
-            } else if (donor.getSex() === Sex.FEMALE && diffDays < 90) {
-                return false;
-            }
-        }
-        return true;
+    public getDonationsByDonor(donor: Donor): Donation[] {
+        return this.donations.filter(
+            (donation) => donation.getDonor().getId() === donor.getId(),
+        );
     }
 }

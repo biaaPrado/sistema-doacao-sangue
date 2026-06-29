@@ -4,21 +4,45 @@ import Donation from './Donation';
 
 export default class Donor {
     constructor(
-        private id: number,
+        private id: string,
         private name: string,
         private cpf: string,
-        private birthDate: Date,
-        private weight: number,
         private phone: string,
+        private email: string,
+        private birthDate: Date,
         private sex: Sex,
-        private address: string,
+        private weight: number,
         private bloodType: BloodType,
         private donations: Donation[],
     ) {}
 
-    // Getters
     public addDonation(donation: Donation): void {
         this.donations.push(donation);
+    }
+
+    // Getters
+    public getId(): string {
+        return this.id;
+    }
+
+    public getName(): string {
+        return this.name;
+    }
+
+    public getCpf(): string {
+        return this.cpf;
+    }
+
+    public getPhone(): string {
+        return this.phone;
+    }
+
+    public getEmail(): string {
+        return this.email;
+    }
+
+    public getBirthDate(): Date {
+        return this.birthDate;
     }
 
     public getBloodType(): BloodType {
