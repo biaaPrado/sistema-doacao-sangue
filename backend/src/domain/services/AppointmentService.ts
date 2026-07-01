@@ -1,4 +1,6 @@
+import { AppointmentDTO } from '../dtos/AppointmentDTO';
 import Appointment from '../entities/Appointment';
+import Donor from '../entities/Donor';
 import { Status } from '../enums/Status';
 
 export default class AppointmentService {
@@ -16,14 +18,16 @@ export default class AppointmentService {
         return this.appointments;
     }
 
-    public update(id: string, appointment: Appointment): void {
-        const index = this.appointments.findIndex((a) => a.getId() === id);
+    public update(dto: AppointmentDTO, donor: Donor): void {
+        const appointment = this.findById(dto.id);
 
-        if (index === -1) {
+        if (!appointment) {
             throw new Error('Agendamento não encontrado');
         }
 
-        this.appointments[index] = appointment;
+        appointment.setDonor(donor);
+        appointment.setDate(dto.date);
+        appointment.setObservations(dto.observations);
     }
 
     public cancel(id: string): void {

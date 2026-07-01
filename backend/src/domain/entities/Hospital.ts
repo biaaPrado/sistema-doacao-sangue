@@ -56,4 +56,44 @@ export default class Hospital {
     public getState(): string {
         return this.state;
     }
+
+    public setName(name: string): void {
+        this.name = name;
+    }
+
+    public setCnpj(cnpj: string): void {
+        this.cnpj = cnpj;
+    }
+
+    public setPhone(phone: string): void {
+        this.phone = phone;
+    }
+
+    public setEmail(email: string): void {
+        this.email = email;
+    }
+
+    public setCep(cep: string): void {
+        this.cep = cep;
+    }
+
+    public setAddress(address: string): void {
+        this.address = address;
+    }
+
+    public setNumber(number: string): void {
+        this.number = number;
+    }
+
+    public setComplement(complement: string | null): void {
+        this.complement = complement;
+    }
+
+    public setCity(city: string): void {
+        this.city = city;
+    }
+
+    public setState(state: string): void {
+        this.state = state;
+    }
 }

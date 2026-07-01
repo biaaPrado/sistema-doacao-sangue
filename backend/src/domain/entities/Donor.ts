@@ -83,6 +83,39 @@ export default class Donor {
         return this.donations;
     }
 
+    // Setters
+    public setName(name: string) {
+        this.name = name;
+    }
+
+    public setCpf(cpf: string) {
+        this.cpf = cpf;
+    }
+
+    public setPhone(phone: string) {
+        this.phone = phone;
+    }
+
+    public setEmail(email: string) {
+        this.email = email;
+    }
+
+    public setBirthDate(birthDate: Date) {
+        this.birthDate = birthDate;
+    }
+
+    public setSex(sex: Sex) {
+        this.sex = sex;
+    }
+
+    public setWeight(weight: number) {
+        this.weight = weight;
+    }
+
+    public setBloodType(bloodType: BloodType) {
+        this.bloodType = bloodType;
+    }
+
     public addDonation(donation: Donation): void {
         this.donations.push(donation);
     }

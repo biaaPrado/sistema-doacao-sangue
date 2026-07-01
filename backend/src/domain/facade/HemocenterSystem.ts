@@ -1,11 +1,20 @@
-import Appointment from '../entities/Appointment';
+import { AppointmentDTO } from '../dtos/AppointmentDTO';
+import { BloodBagDTO } from '../dtos/BloodBagDTO';
+import { BloodRequestDTO } from '../dtos/BloodRequestDTO';
+import { DonationDTO } from '../dtos/DonationDTO';
+import { DonorDTO } from '../dtos/DonorDTO';
+import { HospitalDTO } from '../dtos/HospitalDTO';
 import BloodBag from '../entities/BloodBag';
-import BloodRequest from '../entities/BloodRequest';
 import Donation from '../entities/Donation';
-import Donor from '../entities/Donor';
-import Hospital from '../entities/Hospital';
 
 import { Status } from '../enums/Status';
+import { AppointmentMapper } from '../mappers/AppointmentMapper';
+import { BloodBagMapper } from '../mappers/BloodBagMapper';
+import { BloodRequestMapper } from '../mappers/BloodRequestMapper';
+import { BloodTypeMapper } from '../mappers/BloodTypeMapper';
+import { DonationMapper } from '../mappers/DonationMapper';
+import { DonorMapper } from '../mappers/DonorMapper';
+import { HospitalMapper } from '../mappers/HospitalMapper';
 
 import AppointmentService from '../services/AppointmentService';
 import BloodRequestService from '../services/BloodRequestService';
@@ -37,28 +46,36 @@ export default class HemocenterSystem {
     ========================================
     */
 
-    public createDonor(donor: Donor): void {
+    public createDonor(donor: DonorDTO): void {
         this.donorService.addDonor(donor);
     }
 
-    public updateDonor(id: string, donor: Donor): void {
-        this.donorService.updateDonor(id, donor);
+    public updateDonor(donor: DonorDTO): void {
+        this.donorService.updateDonor(donor);
     }
 
     public removeDonor(id: string): void {
         this.donorService.removeDonor(id);
     }
 
-    public findDonorById(id: string): Donor | null {
-        return this.donorService.findById(id);
+    public findDonorById(id: string): DonorDTO | null {
+        const donor = this.donorService.findById(id);
+        return donor ? DonorMapper.toDTO(donor) : null;
     }
 
-    public getAllDonors(): Donor[] {
-        return this.donorService.getAllDonors();
+    public getAllDonors(): DonorDTO[] {
+        return this.donorService.getAllDonors().map(DonorMapper.toDTO);
     }
 
-    public getAllDonationsByDonor(donor: Donor): Donation[] {
-        return this.donationService.getDonationsByDonor(donor);
+    public getAllDonationsByDonor(donorDTO: DonorDTO): DonationDTO[] {
+        const donor = this.donorService.findById(donorDTO.id);
+
+        if (!donor) {
+            return [];
+        }
+        return this.donationService
+            .getDonationsByDonor(donor)
+            .map(DonationMapper.toDTO);
     }
 
     /*
@@ -67,12 +84,18 @@ export default class HemocenterSystem {
     ========================================
     */
 
-    public createDonation(donation: Donation): void {
-        const donor = donation.getDonor();
+    public createDonation(donationDTO: DonationDTO): void {
+        const donor = this.donorService.findById(donationDTO.donor.id);
+
+        if (!donor) {
+            throw new Error('Doador não encontrado');
+        }
 
         if (!EligibilityService.canDonate(donor)) {
             throw new Error('Doador não é elegível para doar sangue');
         }
+
+        const donation = DonationMapper.toEntity(donationDTO, donor);
 
         donor.addDonation(donation);
         this.donationService.addDonation(donation);
@@ -88,8 +111,8 @@ export default class HemocenterSystem {
         this.stockService.addBag(bag);
     }
 
-    public getAllDonations(): Donation[] {
-        return this.donationService.getAll();
+    public getAllDonations(): DonationDTO[] {
+        return this.donationService.getAll().map(DonationMapper.toDTO);
     }
 
     /*
@@ -98,24 +121,26 @@ export default class HemocenterSystem {
     ========================================
     */
 
-    public createHospital(hospital: Hospital): void {
+    public createHospital(hospital: HospitalDTO): void {
         this.hospitalService.addHospital(hospital);
     }
 
-    public updateHospital(id: string, hospital: Hospital): void {
-        this.hospitalService.updateHospital(id, hospital);
+    public updateHospital(hospital: HospitalDTO): void {
+        this.hospitalService.updateHospital(hospital);
     }
 
     public removeHospital(id: string): void {
         this.hospitalService.removeHospital(id);
     }
 
-    public findHospitalById(id: string): Hospital | null {
-        return this.hospitalService.findById(id);
+    public findHospitalById(id: string): HospitalDTO | null {
+        const hospital = this.hospitalService.findById(id);
+
+        return hospital ? HospitalMapper.toDTO(hospital) : null;
     }
 
-    public getAllHospitals(): Hospital[] {
-        return this.hospitalService.getAllHospitals();
+    public getAllHospitals(): HospitalDTO[] {
+        return this.hospitalService.getAllHospitals().map(HospitalMapper.toDTO);
     }
 
     /*
@@ -124,12 +149,26 @@ export default class HemocenterSystem {
     ========================================
     */
 
-    public createAppointment(appointment: Appointment): void {
+    public createAppointment(appointmentDTO: AppointmentDTO): void {
+        const donor = this.donorService.findById(appointmentDTO.donor.id);
+
+        if (!donor) {
+            throw new Error('Doador não encontrado');
+        }
+
+        const appointment = AppointmentMapper.toEntity(appointmentDTO, donor);
+
         this.appointmentService.create(appointment);
     }
 
-    public updateAppointment(id: string, appointment: Appointment): void {
-        this.appointmentService.update(id, appointment);
+    public updateAppointment(appointmentDTO: AppointmentDTO): void {
+        const donor = this.donorService.findById(appointmentDTO.donor.id);
+
+        if (!donor) {
+            throw new Error('Doador não encontrado.');
+        }
+
+        this.appointmentService.update(appointmentDTO, donor);
     }
 
     public cancelAppointment(id: string): void {
@@ -140,8 +179,8 @@ export default class HemocenterSystem {
         this.appointmentService.remove(id);
     }
 
-    public getAppointments(): Appointment[] {
-        return this.appointmentService.getAll();
+    public getAppointments(): AppointmentDTO[] {
+        return this.appointmentService.getAll().map(AppointmentMapper.toDTO);
     }
 
     /*
@@ -191,12 +230,14 @@ export default class HemocenterSystem {
     ========================================
     */
 
-    public getStock(): BloodBag[] {
-        return this.stockService.getAllBags();
+    public getStock(): BloodBagDTO[] {
+        return this.stockService.getAllBags().map(BloodBagMapper.toDTO);
     }
 
-    public getCompatibleBags(request: BloodRequest): BloodBag[] {
-        return this.stockService.findCompatibleBags(request.getBloodType());
+    public getCompatibleBags(requestDTO: BloodRequestDTO): BloodBagDTO[] {
+        return this.stockService
+            .findCompatibleBags(BloodTypeMapper.toEntity(requestDTO.bloodType))
+            .map(BloodBagMapper.toDTO);
     }
 
     /*
@@ -205,16 +246,18 @@ export default class HemocenterSystem {
     ========================================
     */
 
-    public createBloodRequest(request: BloodRequest): void {
-        this.bloodRequestService.addRequest(request);
+    public createBloodRequest(requestDTO: BloodRequestDTO): void {
+        this.bloodRequestService.addRequest(requestDTO);
     }
 
     public cancelBloodRequest(id: string): void {
         this.bloodRequestService.cancelRequest(id);
     }
 
-    public getBloodRequests(): BloodRequest[] {
-        return this.bloodRequestService.getAllRequests();
+    public getBloodRequests(): BloodRequestDTO[] {
+        return this.bloodRequestService
+            .getAllRequests()
+            .map(BloodRequestMapper.toDTO);
     }
 
     /*

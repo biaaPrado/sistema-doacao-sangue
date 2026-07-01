@@ -1,9 +1,13 @@
+import { HospitalDTO } from '../dtos/HospitalDTO';
 import Hospital from '../entities/Hospital';
+import { HospitalMapper } from '../mappers/HospitalMapper';
 
 export default class HospitalService {
     private hospitals: Hospital[] = [];
 
-    public addHospital(hospital: Hospital): void {
+    public addHospital(dto: HospitalDTO): void {
+        const hospital = HospitalMapper.toEnitity(dto);
+
         if (this.hospitalExists(hospital.getCnpj())) {
             throw new Error('Já existe um hospital com esse CNPJ.');
         }
@@ -11,33 +15,40 @@ export default class HospitalService {
     }
 
     public removeHospital(id: string): void {
-        const index = this.hospitals.findIndex(
-            (hospital) => hospital.getId() === id,
-        );
+        const hospital = this.findById(id);
 
-        if (index === -1) {
+        if (!hospital) {
             throw new Error('Hospital não encontrado.');
         }
 
-        this.hospitals.splice(index, 1);
+        this.hospitals = this.hospitals.filter((h) => h.getId() !== id);
     }
 
-    public updateHospital(id: string, updatedHospital: Hospital): void {
-        const hospitalWithCnpj = this.findByCnpj(updatedHospital.getCnpj());
+    public updateHospital(dto: HospitalDTO): void {
+        const hospitalWithCnpj = this.findByCnpj(dto.cnpj);
 
-        if (hospitalWithCnpj && hospitalWithCnpj.getId() !== id) {
+        if (hospitalWithCnpj && hospitalWithCnpj.getId() !== dto.id) {
             throw new Error('Já existe um hospital com esse CNPJ.');
         }
 
-        const index = this.hospitals.findIndex(
-            (hospital) => hospital.getId() === id,
-        );
+        const hospital = this.findById(dto.id);
 
-        if (index === -1) {
+        if (!hospital) {
             throw new Error('Hospital não encontrado.');
         }
 
-        this.hospitals[index] = updatedHospital;
+        hospital.setName(dto.name);
+        hospital.setCnpj(dto.cnpj);
+        hospital.setPhone(dto.phone);
+        hospital.setEmail(dto.email);
+
+        hospital.setCep(dto.cep);
+        hospital.setAddress(dto.address);
+        hospital.setNumber(dto.number);
+        hospital.setComplement(dto.complement);
+
+        hospital.setCity(dto.city);
+        hospital.setState(dto.state);
     }
 
     public findById(id: string): Hospital | null {

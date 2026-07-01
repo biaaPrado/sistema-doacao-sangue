@@ -1,9 +1,14 @@
+import { DonorDTO } from '../dtos/DonorDTO';
 import Donor from '../entities/Donor';
+import { BloodTypeMapper } from '../mappers/BloodTypeMapper';
+import { DonorMapper } from '../mappers/DonorMapper';
 
 export default class DonorService {
     private donors: Donor[] = [];
 
-    public addDonor(donor: Donor): void {
+    public addDonor(dto: DonorDTO): void {
+        const donor = DonorMapper.toEntity(dto);
+
         if (this.donorExists(donor.getCpf())) {
             throw new Error('Já existe um doador com esse CPF.');
         }
@@ -20,19 +25,27 @@ export default class DonorService {
         this.donors.splice(index, 1);
     }
 
-    public updateDonor(id: string, updatedDonor: Donor): void {
-        const donorWithCpf = this.findByCpf(updatedDonor.getCpf());
+    public updateDonor(dto: DonorDTO): void {
+        const donorWithCpf = this.findByCpf(dto.cpf);
 
-        if (donorWithCpf && donorWithCpf.getId() !== id) {
+        if (donorWithCpf && donorWithCpf.getId() !== dto.id) {
             throw new Error('CPF já cadastrado.');
         }
-        const index = this.donors.findIndex((donor) => donor.getId() === id);
 
-        if (index === -1) {
-            throw new Error('Doador não encontrado.');
+        const donor = this.findById(dto.id);
+
+        if (!donor) {
+            throw new Error('Doador não encontrado');
         }
 
-        this.donors[index] = updatedDonor;
+        donor.setName(dto.name);
+        donor.setCpf(dto.cpf);
+        donor.setPhone(dto.phone);
+        donor.setEmail(dto.email);
+        donor.setBirthDate(dto.birthDate);
+        donor.setSex(dto.sex);
+        donor.setWeight(dto.weight);
+        donor.setBloodType(BloodTypeMapper.toEntity(dto.bloodType));
     }
 
     public findByCpf(cpf: string): Donor | null {

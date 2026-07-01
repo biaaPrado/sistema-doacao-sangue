@@ -6,7 +6,7 @@ export default class Appointment {
         private id: string,
         private donor: Donor,
         private date: Date,
-        private observations: string,
+        private observations: string | null,
         private status: Status,
     ) {}
 
@@ -26,8 +26,20 @@ export default class Appointment {
         return this.status;
     }
 
-    public getObservations(): string {
+    public getObservations(): string | null {
         return this.observations;
+    }
+
+    public setDonor(donor: Donor) {
+        this.donor = donor;
+    }
+
+    public setDate(date: Date) {
+        this.date = date;
+    }
+
+    public setObservations(observations: string | null) {
+        this.observations = observations;
     }
 
     public setStatus(status: Status): void {

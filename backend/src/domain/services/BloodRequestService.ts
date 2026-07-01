@@ -1,11 +1,14 @@
+import { BloodRequestDTO } from '../dtos/BloodRequestDTO';
 import BloodRequest from '../entities/BloodRequest';
 import { Status } from '../enums/Status';
+import { BloodRequestMapper } from '../mappers/BloodRequestMapper';
 
 export default class BloodRequestService {
     private requests: BloodRequest[] = [];
 
-    public addRequest(request: BloodRequest): void {
-        this.requests.push(request);
+    public addRequest(dto: BloodRequestDTO): void {
+        const bloodRequest = BloodRequestMapper.toEntity(dto);
+        this.requests.push(bloodRequest);
     }
 
     public findById(id: string): BloodRequest | null {
