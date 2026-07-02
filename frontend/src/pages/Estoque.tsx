@@ -165,13 +165,13 @@ export function Estoque() {
                                             </div>
 
                                             <div className='p-3 text-center'>
-                                                {!bolsa.available ? (
-                                                    <span className='text-gray-500 font-medium'>
-                                                        Utilizada
-                                                    </span>
-                                                ) : vencida ? (
+                                                {vencida ? (
                                                     <span className='text-red-600 font-bold'>
                                                         Vencida
+                                                    </span>
+                                                ) : !bolsa.available ? (
+                                                    <span className='text-gray-500 font-medium'>
+                                                        Utilizada
                                                     </span>
                                                 ) : venceEmBreve ? (
                                                     <span className='text-yellow-600 font-bold'>
