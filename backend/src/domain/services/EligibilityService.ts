@@ -2,7 +2,7 @@ import Donor from '../entities/Donor';
 import { Sex } from '../enums/Sex';
 
 export default class EligibilityService {
-    public static canDonate(donor: Donor): boolean {
+    public static canDonate(donor: Donor, date: Date = new Date()): boolean {
         const age = donor.getAge();
 
         if (age < 18 || age > 69) {
@@ -17,8 +17,7 @@ export default class EligibilityService {
 
         if (lastDonation) {
             const diffDays = Math.floor(
-                (new Date().getTime() -
-                    lastDonation.getDonationDate().getTime()) /
+                (date.getTime() - lastDonation.getDonationDate().getTime()) /
                     (1000 * 60 * 60 * 24),
             );
 

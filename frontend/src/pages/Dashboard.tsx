@@ -32,24 +32,26 @@ export function Dashboard() {
     const { bolsas } = useEstoque();
 
     const totalDoadores = doadores.length;
-    const totalAgendamentos = agendamentos.length;
+    const totalAgendamentos = agendamentos.filter(
+        (a) => a.status == Status.PENDING,
+    ).length;
 
     const totalDoacoes = doadores.reduce(
         (acc, doador) => acc + doador.donations.length,
         0,
     );
 
-    const totalBolsas = bolsas.length;
+    const totalBolsas = bolsas.filter((b) => b.available == true).length;
 
     const tipos = ['A', 'B', 'AB', 'O'];
 
     const dataPorTipo = tipos.map((tipo) => {
-        const positivos = doadores.filter(
-            (d) => d.bloodType.type === tipo && d.bloodType.rhFactor === '+',
+        const positivos = bolsas.filter(
+            (b) => b.bloodType.type === tipo && b.bloodType.rhFactor === '+',
         ).length;
 
-        const negativos = doadores.filter(
-            (d) => d.bloodType.type === tipo && d.bloodType.rhFactor === '-',
+        const negativos = bolsas.filter(
+            (b) => b.bloodType.type === tipo && b.bloodType.rhFactor === '-',
         ).length;
 
         return { positivos, negativos };

@@ -91,7 +91,19 @@ export default class HemocenterSystem {
             throw new Error('Doador não encontrado');
         }
 
-        if (!EligibilityService.canDonate(donor)) {
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        const dataDoacao = new Date(donationDTO.date);
+        dataDoacao.setHours(0, 0, 0, 0);
+
+        if (dataDoacao > hoje) {
+            throw new Error(
+                'Não é permitido registrar doações em datas futuras.',
+            );
+        }
+
+        if (!EligibilityService.canDonate(donor, donationDTO.date)) {
             throw new Error('Doador não é elegível para doar sangue');
         }
 
@@ -156,6 +168,10 @@ export default class HemocenterSystem {
             throw new Error('Doador não encontrado');
         }
 
+        if (!EligibilityService.canDonate(donor, appointmentDTO.date)) {
+            throw new Error('Doador não é elegível para doar sangue');
+        }
+
         const appointment = AppointmentMapper.toEntity(appointmentDTO, donor);
 
         this.appointmentService.create(appointment);
@@ -166,6 +182,10 @@ export default class HemocenterSystem {
 
         if (!donor) {
             throw new Error('Doador não encontrado.');
+        }
+
+        if (!EligibilityService.canDonate(donor, appointmentDTO.date)) {
+            throw new Error('Doador não é elegível para doar sangue');
         }
 
         this.appointmentService.update(appointmentDTO, donor);
@@ -198,7 +218,7 @@ export default class HemocenterSystem {
 
         const donor = appointment.getDonor();
 
-        if (!EligibilityService.canDonate(donor)) {
+        if (!EligibilityService.canDonate(donor, appointment.getDate())) {
             throw new Error('Doador não é elegível para doar sangue');
         }
 

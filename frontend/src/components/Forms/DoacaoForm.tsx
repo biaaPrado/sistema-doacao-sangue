@@ -26,13 +26,17 @@ export function DoacaoForm() {
 
     const doadorEncontrado = doadores.find((d) => d.cpf === cpf);
 
+    const [year, month, day] = form.data.split('-').map(Number);
+
+    const donationDate = new Date(year, month - 1, day);
+
     function handleSubmit() {
         if (!doadorEncontrado) return;
 
         const novaDoacao: DonationDTO = {
             id: crypto.randomUUID(),
             donor: doadorEncontrado,
-            date: new Date(form.data),
+            date: donationDate,
             volume: form.volume,
         };
 

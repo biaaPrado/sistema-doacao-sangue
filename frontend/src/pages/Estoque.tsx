@@ -4,7 +4,9 @@ import { useEstoque } from '../context/EstoqueContext';
 export function Estoque() {
     const { bolsas } = useEstoque();
 
-    const estoquePorTipo = bolsas.reduce(
+    const bolsasDisponiveis = bolsas.filter((bolsa) => bolsa.available);
+
+    const estoquePorTipo = bolsasDisponiveis.reduce(
         (acc, bolsa) => {
             const tipo = `${bolsa.bloodType.type}${bolsa.bloodType.rhFactor}`;
 
@@ -15,7 +17,7 @@ export function Estoque() {
         {} as Record<string, number>,
     );
 
-    const validadePorTipo = bolsas.reduce(
+    const validadePorTipo = bolsasDisponiveis.reduce(
         (acc, bolsa) => {
             const tipo = `${bolsa.bloodType.type}${bolsa.bloodType.rhFactor}`;
 

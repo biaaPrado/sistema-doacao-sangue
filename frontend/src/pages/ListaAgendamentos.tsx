@@ -151,6 +151,12 @@ export function ListaAgendamentos() {
                                                 concluir(agendamento.id)
                                             }
                                             className='bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700'
+                                            disabled={
+                                                new Date(
+                                                    agendamento.date,
+                                                ).setHours(0, 0, 0, 0) >
+                                                new Date().setHours(0, 0, 0, 0)
+                                            }
                                         >
                                             Concluir
                                         </button>
