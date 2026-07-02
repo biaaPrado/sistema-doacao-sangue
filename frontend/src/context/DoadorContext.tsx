@@ -1,45 +1,74 @@
-import { createContext, useContext, useState } from "react";
-import type { Doador } from "../types/Doador";
-import type { Doacao } from "../types/Doacao";
-import { mockDoadores } from "../mocks/mockDoadores";
+// src/context/DoadorContext.tsx
+import React, { createContext, useContext, useState, useEffect } from "react";
+import type { DonorDTO } from '../../../backend/src/domain/dtos/DonorDTO';
+import type { DonationDTO } from '../../../backend/src/domain/dtos/DonationDTO';
+import { system } from "../system/system";
 
 interface DoadorContextType {
-  doadores: Doador[];
-
-  addDoador: (d: Doador) => void;
-  removerDoador: (cpf: string) => void;
-  doadorEmEdicao: Doador | null;
-  setDoadorEmEdicao: (d: Doador | null) => void;
-  atualizarDoador: (cpf: string, d: Doador) => void;
-  registrarDoacao: (cpf: string, doacao: Doacao) => void;
-  adicionarDoacaoAoHistorico: (doadorId: string, doacao: Doacao) => void;
+  doadores: DonorDTO[];
+  addDoador: (doador: DonorDTO) => void;
+  removerDoador: (id: string) => void;
+  doadorEmEdicao: DonorDTO | null;
+  setDoadorEmEdicao: (doador: DonorDTO | null) => void;
+  atualizarDoador: (doador: DonorDTO) => void;
+  registrarDoacao: (donation: DonationDTO) => void;
+  carregarDoadores: () => void;
 }
 
 const DoadorContext = createContext<DoadorContextType | null>(null);
 
-export function DoadorProvider({children, }: {children: React.ReactNode;}) {
-  //const [doadores, setDoadores] = useState<Doador[]>([]);
-  const [ doadores, setDoadores ] = useState<Doador[]>(mockDoadores);
-  const [doadorEmEdicao, setDoadorEmEdicao] = useState<Doador | null>(null);
+export function DoadorProvider({ children }: { children: React.ReactNode }) {
+  const [doadores, setDoadores] = useState<DonorDTO[]>([]);
+  const [doadorEmEdicao, setDoadorEmEdicao] = useState<DonorDTO | null>(null);
 
-  function addDoador(doador: Doador) {
-    setDoadores((prev) => [...prev,{...doador, historicoDoacoes: doador.historicoDoacoes ?? [],},]);
+  // Função auxiliar para sincronizar o estado do React com os dados contidos no System
+  const carregarDoadores = () => {
+    const todosDoadores = system.getAllDonors();
+    setDoadores(todosDoadores);
+  };
+
+  // Carrega a lista inicial assim que o provider for montado
+  useEffect(() => {
+    carregarDoadores();
+  }, []);
+
+  function addDoador(doador: DonorDTO) {
+    try {
+      system.createDonor(doador);
+      carregarDoadores(); // Sincroniza o estado do front com o back
+    } catch (error) {
+      console.error("Erro ao adicionar doador:", error);
+    }
   }
 
-  function removerDoador(cpf: string) {
-    setDoadores((prev) => prev.filter((d) => d.cpf !== cpf));
+  function removerDoador(id: string) {
+    try {
+      system.removeDonor(id);
+      carregarDoadores();
+    } catch (error) {
+      console.error("Erro ao remover doador:", error);
+    }
   }
 
-  function atualizarDoador(cpf: string, doador: Doador) {
-    setDoadores((prev) => prev.map((item) => item.cpf === cpf ? { ...doador, historicoDoacoes:doador.historicoDoacoes ?? [],}: item));
+  function atualizarDoador(doador: DonorDTO) {
+    try {
+      system.updateDonor(doador);
+      carregarDoadores();
+    } catch (error) {
+      console.error("Erro ao atualizar doador:", error);
+    }
   }
 
-  function registrarDoacao(cpf: string, doacao: Doacao) {
-    setDoadores((prev) => prev.map((d) => d.cpf === cpf ? { ...d, historicoDoacoes: [...(d.historicoDoacoes ?? []), doacao,],}: d));
-  }
-
-  function adicionarDoacaoAoHistorico(doadorId: string, doacao: Doacao) {
-    setDoadores((prev) => prev.map((d) => d.id === doadorId ? { ...d, historicoDoacoes: [...d.historicoDoacoes, doacao],}: d));
+  function registrarDoacao(donation: DonationDTO) {
+    try {
+      // O método do system valida se o doador existe e se é elegível antes de criar
+      system.createDonation(donation);
+      carregarDoadores(); // Recarrega para trazer o histórico de doações atualizado nas propriedades do doador
+    } catch (error: any) {
+      // Captura os erros de elegibilidade jogados pelo EligibilityService no backend
+      alert(error.message);
+      console.error("Erro ao registrar doação:", error);
+    }
   }
 
   return (
@@ -50,11 +79,12 @@ export function DoadorProvider({children, }: {children: React.ReactNode;}) {
         removerDoador,
         atualizarDoador,
         registrarDoacao,
-        adicionarDoacaoAoHistorico,
         doadorEmEdicao,
         setDoadorEmEdicao,
+        carregarDoadores,
       }}
-    > {children}
+    >
+      {children}
     </DoadorContext.Provider>
   );
 }

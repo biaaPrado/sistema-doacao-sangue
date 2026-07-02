@@ -1,16 +1,13 @@
+// src/pages/ListaDoadores/ListaDoadores.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { useDoadores } from "../context/DoadorContext";
 import { ConfirmModal } from "../components/ConfirmModal/ConfirmModal";
+import type { DonorDTO } from "../../../backend/src/domain/dtos/DonorDTO";
 
 export function ListaDoadores() {
-  const {
-    doadores,
-    removerDoador,
-    setDoadorEmEdicao,
-  } = useDoadores();
-
+  const { doadores, removerDoador, setDoadorEmEdicao } = useDoadores();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
@@ -18,23 +15,22 @@ export function ListaDoadores() {
   const [rh, setRh] = useState("");
 
   const [modalAberto, setModalAberto] = useState(false); 
-  const [cpfSelecionado, setCpfSelecionado] = useState("");
+  const [idSelecionado, setIdSelecionado] = useState(""); // Alterado de CPF para ID para alinhar com o System
 
-  function editarDoador(index: number) {
-    setDoadorEmEdicao(doadores[index]);
+  function editarDoador(doador: DonorDTO) {
+    setDoadorEmEdicao(doador);
     navigate("/cadastro-doador");
   }
 
-  function abrirModalExcluir(index: number) {
-    setCpfSelecionado(doadores[index].cpf);
+  function abrirModalExcluir(id: string) {
+    setIdSelecionado(id);
     setModalAberto(true);
   }
 
   function confirmarExclusao() {
-    removerDoador(cpfSelecionado);
-
+    removerDoador(idSelecionado);
     setModalAberto(false);
-    setCpfSelecionado("");
+    setIdSelecionado("");
   }
 
   function limparFiltros() {
@@ -43,10 +39,11 @@ export function ListaDoadores() {
     setRh("");
   }
 
+  // Filtros corrigidos consumindo a estrutura do DonorDTO e BloodTypeDTO
   const filtrados = doadores.filter((d) => {
-    const matchNome = d.nome.toLowerCase().includes(search.toLowerCase());
-    const matchTipo = tipo? d.tipoSanguineo === tipo: true;
-    const matchRh = rh? d.fatorRh === rh: true;
+    const matchNome = d.name ? d.name.toLowerCase().includes(search.toLowerCase()) : false;
+    const matchTipo = tipo ? d.bloodType?.type === tipo : true;
+    const matchRh = rh ? d.bloodType?.rhFactor === rh : true;
 
     return matchNome && matchTipo && matchRh;
   });
@@ -59,7 +56,8 @@ export function ListaDoadores() {
 
           <button
             onClick={() => navigate("/cadastro-doador")}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"> 
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+          > 
             Novo Doador
           </button>
         </div>
@@ -76,7 +74,8 @@ export function ListaDoadores() {
           <select
             value={tipo}
             onChange={(e) => setTipo(e.target.value)}
-            className="border p-2 rounded-lg border-gray-300" >
+            className="border p-2 rounded-lg border-gray-300"
+          >
             <option value=""> Tipo sanguíneo </option>
             <option value="A">A</option>
             <option value="B">B</option>
@@ -87,7 +86,8 @@ export function ListaDoadores() {
           <select
             value={rh}
             onChange={(e) => setRh(e.target.value)}
-            className="border p-2 rounded-lg border-gray-300" >
+            className="border p-2 rounded-lg border-gray-300"
+          >
             <option value=""> Fator RH </option>
             <option value="+">+</option>
             <option value="-">-</option>
@@ -95,11 +95,15 @@ export function ListaDoadores() {
 
           <button
             onClick={limparFiltros}
-            className="bg-gray-200 hover:bg-gray-300 rounded-lg border border-gray-300"> Limpar filtros
+            className="bg-gray-200 hover:bg-gray-300 rounded-lg border border-gray-300"
+          > 
+            Limpar filtros
           </button>
         </div>
 
-        {filtrados.length === 0 ? ( <p className="text-gray-500"> Nenhum doador encontrado </p> ) : (
+        {filtrados.length === 0 ? (
+          <p className="text-gray-500"> Nenhum doador encontrado </p>
+        ) : (
           <div>
             <div className="grid grid-cols-5 bg-red-700 text-white font-semibold rounded-t-xl">
               <div className="p-3 text-center"> Nome </div>
@@ -109,22 +113,29 @@ export function ListaDoadores() {
               <div className="p-3 text-center"> Ações </div>
             </div>
 
-            {filtrados.map((d, index) => (
-              <div key={d.cpf} onClick={() => navigate(`/doadores/${d.cpf}`) } className="grid grid-cols-5 border-b border-gray-200 cursor-pointer hover:bg-gray-50">
-                <div className="p-3 text-center"> {d.nome} </div>
+            {filtrados.map((d) => (
+              <div 
+                key={d.id} 
+                onClick={() => navigate(`/doadores/${d.id}`)} 
+                className="grid grid-cols-5 border-b border-gray-200 cursor-pointer hover:bg-gray-50 items-center"
+              >
+                {/* Alterado para propriedades em inglês do DTO */}
+                <div className="p-3 text-center truncate"> {d.name} </div>
                 <div className="p-3 text-center"> {d.cpf} </div>
-                <div className="p-3 text-center"> {d.tipoSanguineo}{d.fatorRh} </div>
-                <div className="p-3 text-center"> {d.peso} kg </div>
+                <div className="p-3 text-center"> {d.bloodType?.type}{d.bloodType?.rhFactor} </div>
+                <div className="p-3 text-center"> {d.weight} kg </div>
                 <div className="p-3 flex justify-center gap-2">
                   <button
-                    onClick={(e) => {e.stopPropagation(); editarDoador(index);}}
-                    className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"> 
+                    onClick={(e) => { e.stopPropagation(); editarDoador(d); }}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"
+                  > 
                     Editar
                   </button>
 
                   <button
-                    onClick={(e) => { e.stopPropagation(); abrirModalExcluir(index); }}
-                    className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700">
+                    onClick={(e) => { e.stopPropagation(); abrirModalExcluir(d.id); }}
+                    className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700"
+                  >
                     Excluir
                   </button>
                 </div>
@@ -139,7 +150,7 @@ export function ListaDoadores() {
         title="Excluir Doador"
         message="Tem certeza que deseja excluir este doador? Esta ação não poderá ser desfeita."
         onConfirm={confirmarExclusao}
-        onCancel={() => { setModalAberto(false); setCpfSelecionado(""); }}
+        onCancel={() => { setModalAberto(false); setIdSelecionado(""); }}
       />
     </MainLayout>
   );

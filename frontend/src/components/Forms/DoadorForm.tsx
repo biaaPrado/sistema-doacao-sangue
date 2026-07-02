@@ -1,3 +1,4 @@
+// src/components/DoadorForm/DoadorForm.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "../Input/Input";
@@ -7,128 +8,157 @@ import { useDoadores } from "../../context/DoadorContext";
 import { useToast } from "../../hooks/useToast";
 import { Toast } from "../Toast/Toast";
 
-import type { Doador } from "../../types/Doador";
+// Importações estritas de tipos de acordo com o verbatimModuleSyntax
+import type { DonorDTO } from "../../../../backend/src/domain/dtos/DonorDTO";
+import type { BloodTypeDTO } from "../../../../backend/src/domain/dtos/BloodTypeDTO";
+import { Sex } from "../../../../backend/src/domain/enums/Sex";
 
 export function DoadorForm() {
   const navigate = useNavigate();
-
-  const {
-    addDoador,
-    atualizarDoador,
-    doadorEmEdicao,
-    setDoadorEmEdicao,
-  } = useDoadores();
-
+  const { addDoador, atualizarDoador, doadorEmEdicao, setDoadorEmEdicao } = useDoadores();
   const { toast, showToast } = useToast();
 
-  const [doador, setDoador] = useState<Doador>({
+  // Estado inicial adaptado estritamente para a estrutura do DonorDTO
+  const [doador, setDoador] = useState<DonorDTO>({
     id: crypto.randomUUID(),
-    nome: "",
+    name: "",
     cpf: "",
-    telefone: "",
+    phone: "",
     email: "",
-    dataNascimento: "",
-    sexo: "",
-    peso: 0,
-    tipoSanguineo: "",
-    fatorRh: "",
-    historicoDoacoes: [],
+    birthDate: new Date(), // Inicializado como objeto Date padrão do DTO
+    sex: "" as Sex,
+    weight: 0,
+    bloodType: {
+      type: "",
+      rhFactor: ""
+    } as BloodTypeDTO,
+    donations: [],
   });
 
+  // Estado auxiliar para lidar com a string da data no input HTML do tipo "date"
+  const [dataString, setDataString] = useState<string>("");
+
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const hojeStr = new Date().toISOString().split("T")[0];
 
-  const hoje = new Date().toISOString().split("T")[0];
-
+  // Monitora o doador em edição para preencher o formulário
   useEffect(() => {
     if (doadorEmEdicao) {
-      setDoador({...doadorEmEdicao, historicoDoacoes: doadorEmEdicao.historicoDoacoes ?? [], });
-    }}, [doadorEmEdicao]
-  );
+      setDoador({
+        ...doadorEmEdicao,
+        donations: doadorEmEdicao.donations ?? [],
+      });
+      
+      // Converte o objeto Date do DTO para o formato yyyy-MM-dd que o input date aceita
+      if (doadorEmEdicao.birthDate) {
+        const d = new Date(doadorEmEdicao.birthDate);
+        if (!isNaN(d.getTime())) {
+          setDataString(d.toISOString().split("T")[0]);
+        }
+      }
+    }
+  }, [doadorEmEdicao]);
 
   function validateField(name: string, value: any) {
     let message = "";
 
     switch (name) {
-      case "nome": if (!value.trim()) message = "Nome obrigatório"; break;
-      case "cpf": if (!value.trim()) message = "CPF obrigatório"; break;
-      case "telefone": if (!value.trim()) message = "Telefone obrigatório"; break;
-      case "email": if (!value.includes("@")) message = "Email inválido"; break;
-      case "dataNascimento":
+      case "name": if (!value.toString().trim()) message = "Nome obrigatório"; break;
+      case "cpf": if (!value.toString().trim()) message = "CPF obrigatório"; break;
+      case "phone": if (!value.toString().trim()) message = "Telefone obrigatório"; break;
+      case "email": if (!value.toString().includes("@")) message = "Email inválido"; break;
+      case "birthDate":
         if (!value) message = "Data obrigatória";
-        else if (value > hoje) message = "Insira uma data válida!";
+        else if (value > hojeStr) message = "Insira uma data válida!";
         break;
-
-      case "peso": if (!value || Number(value) <= 0) message = "Peso inválido"; break;
-      case "sexo": if (!value) message = "Sexo obrigatório"; break;
-      case "tipoSanguineo": if (!value) message = "Obrigatório"; break;
-      case "fatorRh": if (!value) message = "Obrigatório"; break;
+      case "weight": if (!value || Number(value) <= 0) message = "Peso inválido"; break;
+      case "sex": if (!value) message = "Sexo obrigatório"; break;
+      case "type": if (!value) message = "Obrigatório"; break;
+      case "rhFactor": if (!value) message = "Obrigatório"; break;
     }
 
-    setErrors((prev) => ({...prev, [name]: message, }));
+    setErrors((prev) => ({ ...prev, [name]: message }));
   }
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
+    const newValue = name === "weight" ? Number(value) : value;
 
-    const newValue = name === "peso" ? Number(value) : value;
-
-    setDoador((prev) => ({...prev, [name]: newValue, }));
-
+    setDoador((prev) => ({ ...prev, [name]: newValue }));
     validateField(name, newValue);
+  }
+
+  // Manipulador específico para a data de nascimento, convertendo string para Date
+  function handleDateChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const value = event.target.value;
+    setDataString(value);
+    
+    if (value) {
+      // Cria a data considerando o fuso horário local correto
+      const parts = value.split("-");
+      const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      setDoador((prev) => ({ ...prev, birthDate: dateObj }));
+    }
+    validateField("birthDate", value);
   }
 
   function validateAll() {
     const newErrors: Record<string, string> = {};
 
-    if (!doador.nome.trim()) newErrors.nome = "Nome obrigatório";
+    if (!doador.name.trim()) newErrors.name = "Nome obrigatório";
     if (!doador.cpf.trim()) newErrors.cpf = "CPF obrigatório";
-    if (!doador.telefone.trim()) newErrors.telefone = "Telefone obrigatório";
+    if (!doador.phone.trim()) newErrors.phone = "Telefone obrigatório";
     if (!doador.email.includes("@")) newErrors.email = "Email inválido";
-    if (!doador.dataNascimento) newErrors.dataNascimento = "Data obrigatória";
-    if (doador.dataNascimento > hoje)
-      newErrors.dataNascimento = "Data não pode ser futura";
-    if (!doador.sexo) newErrors.sexo = "Sexo obrigatório";
-    if (!doador.peso || doador.peso <= 0) newErrors.peso = "Peso inválido";
-    if (!doador.tipoSanguineo) newErrors.tipoSanguineo = "Obrigatório";
-    if (!doador.fatorRh) newErrors.fatorRh = "Obrigatório";
+    if (!dataString) newErrors.birthDate = "Data obrigatória";
+    if (dataString > hojeStr) newErrors.birthDate = "Data não pode ser futura";
+    if (!doador.sex) newErrors.sex = "Sexo obrigatório";
+    if (!doador.weight || doador.weight <= 0) newErrors.weight = "Peso inválido";
+    if (!doador.bloodType.type) newErrors.type = "Obrigatório";
+    if (!doador.bloodType.rhFactor) newErrors.rhFactor = "Obrigatório";
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   }
 
   function handleSubmit() {
-    if (!validateAll()) return;
+  if (!validateAll()) return;
 
-    const payload: Doador = {...doador, historicoDoacoes: doador.historicoDoacoes ?? [],
-    };
+  const payload: DonorDTO = {
+    ...doador,
+    // Garanta que o objeto bloodType vá montado de forma limpa
+    bloodType: {
+      id: doador.bloodType.id || crypto.randomUUID(), // Caso o mapper espere um ID para o objeto BloodType
+      type: doador.bloodType.type,
+      rhFactor: doador.bloodType.rhFactor
+    },
+    donations: doador.donations ?? [],
+  };
 
-    if (doadorEmEdicao) {
-      atualizarDoador(doadorEmEdicao.id, payload);
-      setDoadorEmEdicao(null);
-
-      showToast("Doador atualizado com sucesso!", "success", 5000);
-    } else {
-      addDoador({...payload, id: crypto.randomUUID(),});
-      showToast("Doador cadastrado com sucesso!", "success", 5000);
-    }
-
-    setTimeout(() => { navigate("/doadores"); }, 1200);
+  if (doadorEmEdicao) {
+    atualizarDoador(payload);
+    setDoadorEmEdicao(null);
+    showToast("Doador atualizado com sucesso!", "success", 5000);
+  } else {
+    addDoador(payload); // O ID principal do doador já foi gerado no useState inicial
+    showToast("Doador cadastrado com sucesso!", "success", 5000);
   }
+
+  setTimeout(() => { navigate("/doadores"); }, 1200);
+}
 
   return (
     <>
-      {toast && ( <Toast message={toast.message} type={toast.type} duration={toast.duration} /> )}
+      {toast && <Toast message={toast.message} type={toast.type} duration={toast.duration} />}
 
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Input
             label="Nome"
-            name="nome"
-            value={doador.nome}
+            name="name"
+            value={doador.name}
             onChange={handleChange}
           />
-          {errors.nome && <p className="text-red-500 text-sm">{errors.nome}</p>}
+          {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
         </div>
 
         <div>
@@ -149,14 +179,14 @@ export function DoadorForm() {
           <label className="font-medium">Telefone</label>
           <IMaskInput
             mask="(00) 00000-0000"
-            value={doador.telefone}
+            value={doador.phone}
             onAccept={(value) => {
-              setDoador((prev) => ({ ...prev, telefone: value }));
-              validateField("telefone", value);
+              setDoador((prev) => ({ ...prev, phone: value }));
+              validateField("phone", value);
             }}
             className="border border-gray-300 p-3 rounded-xl w-full"
           />
-          {errors.telefone && ( <p className="text-red-500 text-sm">{errors.telefone}</p> )}
+          {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
         </div>
 
         <div>
@@ -166,84 +196,90 @@ export function DoadorForm() {
             value={doador.email}
             onChange={handleChange}
           />
-          {errors.email && (<p className="text-red-500 text-sm">{errors.email}</p> )}
+          {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
         </div>
 
         <div>
           <Input
             label="Data de Nascimento"
             type="date"
-            name="dataNascimento"
-            max={hoje}
-            value={doador.dataNascimento}
-            onChange={handleChange}
+            name="birthDate"
+            max={hojeStr}
+            value={dataString}
+            onChange={handleDateChange}
           />
-          {errors.dataNascimento && ( <p className="text-red-500 text-sm">{errors.dataNascimento}</p> )}
+          {errors.birthDate && <p className="text-red-500 text-sm">{errors.birthDate}</p>}
         </div>
 
         <div>
           <Select
             label="Sexo"
-            name="sexo"
-            value={doador.sexo}
+            name="sex"
+            value={doador.sex}
             onChange={(e) => {
-              const value = e.target.value;
-              setDoador((prev) => ({ ...prev, sexo: value }));
-              validateField("sexo", value);
+              const value = e.target.value as Sex;
+              setDoador((prev) => ({ ...prev, sex: value }));
+              validateField("sex", value);
             }}
-            options={["Masculino", "Feminino", "Outro"]}
+            options={Object.values(Sex)} // Consome as opções direto do seu Enum Sex
           />
-          {errors.sexo && (
-            <p className="text-red-500 text-sm">{errors.sexo}</p> )}
+          {errors.sex && <p className="text-red-500 text-sm">{errors.sex}</p>}
         </div>
 
         <div>
           <Input
             label="Peso"
-            name="peso"
+            name="weight"
             type="number"
-            value={doador.peso}
+            value={doador.weight || ""}
             onChange={handleChange}
           />
-          {errors.peso && ( <p className="text-red-500 text-sm">{errors.peso}</p> )}
+          {errors.weight && <p className="text-red-500 text-sm">{errors.weight}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Select
               label="Tipo Sanguíneo"
-              name="tipoSanguineo"
-              value={doador.tipoSanguineo}
+              name="type"
+              value={doador.bloodType.type}
               onChange={(e) => {
                 const value = e.target.value;
-                setDoador((prev) => ({ ...prev, tipoSanguineo: value }));
-                validateField("tipoSanguineo", value);
+                setDoador((prev) => ({
+                  ...prev,
+                  bloodType: { ...prev.bloodType, type: value }
+                }));
+                validateField("type", value);
               }}
               options={["A", "B", "AB", "O"]}
             />
-            {errors.tipoSanguineo && ( <p className="text-red-500 text-sm">{errors.tipoSanguineo}</p> )}
+            {errors.type && <p className="text-red-500 text-sm">{errors.type}</p>}
           </div>
 
           <div>
             <Select
               label="Fator RH"
-              name="fatorRh"
-              value={doador.fatorRh}
+              name="rhFactor"
+              value={doador.bloodType.rhFactor}
               onChange={(e) => {
                 const value = e.target.value;
-                setDoador((prev) => ({ ...prev, fatorRh: value }));
-                validateField("fatorRh", value);
+                setDoador((prev) => ({
+                  ...prev,
+                  bloodType: { ...prev.bloodType, rhFactor: value }
+                }));
+                validateField("rhFactor", value);
               }}
               options={["+", "-"]}
             />
-            {errors.fatorRh && ( <p className="text-red-500 text-sm">{errors.fatorRh}</p> )}
+            {errors.rhFactor && <p className="text-red-500 text-sm">{errors.rhFactor}</p>}
           </div>
         </div>
 
         <div className="col-span-2 mt-6">
           <button
             onClick={handleSubmit}
-            className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-semibold" >
+            className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-semibold"
+          >
             {doadorEmEdicao ? "Atualizar Doador" : "Cadastrar Doador"}
           </button>
         </div>
