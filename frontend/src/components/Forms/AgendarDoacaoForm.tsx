@@ -1,224 +1,310 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { IMaskInput } from "react-imask";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { IMaskInput } from 'react-imask';
 
-import { Toast } from "../Toast/Toast";
-import { useToast } from "../../hooks/useToast";
-import { useDoadores } from "../../context/DoadorContext";
-import { useAgendamentos } from "../../context/AgendamentoContext";
+import { Toast } from '../Toast/Toast';
+import { useToast } from '../../hooks/useToast';
+import { useDoadores } from '../../context/DoadorContext';
+import { useAgendamentos } from '../../context/AgendamentoContext';
 
-import type { Agendamento } from "../../types/Agendamento";
+import { Status } from '../../../../backend/src/domain/enums/Status';
+import type { AppointmentDTO } from '../../../../backend/src/domain/dtos/AppointmentDTO';
 
 export function AgendarDoacaoForm() {
-  const {
-    addAgendamento,
-    atualizarAgendamento,
-    agendamentoEmEdicao,
-    setAgendamentoEmEdicao,
-  } = useAgendamentos();
+    const {
+        addAgendamento,
+        atualizarAgendamento,
+        agendamentoEmEdicao,
+        setAgendamentoEmEdicao,
+    } = useAgendamentos();
 
-  const { doadores } = useDoadores();
+    const { doadores } = useDoadores();
 
-  const navigate = useNavigate();
-  const { toast, showToast } = useToast();
+    const navigate = useNavigate();
+    const { toast, showToast } = useToast();
 
-  const [cpf, setCpf] = useState("");
+    const [cpf, setCpf] = useState('');
 
-  const [agendamento, setAgendamento] = useState<Agendamento>({
-    id: "",
-    doadorId: "",
-    data: "",
-    horario: "",
-    observacao: "",
-    status: "Agendada",
-  });
+    const [data, setData] = useState('');
+    const [horario, setHorario] = useState('');
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+    const [agendamento, setAgendamento] = useState({
+        observations: '',
+    });
 
-  const hoje = new Date().toISOString().split("T")[0];
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const doadorEncontrado = doadores.find((d) => d.cpf === cpf);
+    const hoje = new Date().toISOString().split('T')[0];
 
-  useEffect(() => {
-    if (agendamentoEmEdicao) {
-      setAgendamento(agendamentoEmEdicao);
+    const doadorEncontrado = doadores.find((d) => d.cpf === cpf);
 
-      const doador = doadores.find(
-        (d) => d.id === agendamentoEmEdicao.doadorId
-      );
+    useEffect(() => {
+        if (!agendamentoEmEdicao) return;
 
-      if (doador) {
-        setCpf(doador.cpf);
-      }
-    }
-  }, [agendamentoEmEdicao, doadores]);
+        setAgendamento({
+            observations: agendamentoEmEdicao.observations ?? '',
+        });
 
-  function validateField(name: string, value: any) {
-    let message = "";
+        const doador = doadores.find(
+            (d) => d.id === agendamentoEmEdicao.donor.id,
+        );
 
-    switch (name) {
-      case "data":
-        if (!value) message = "Informe uma data";
-        else if (value < hoje) message = "Data não pode ser anterior à atual";
-        break;
+        if (doador) {
+            setCpf(doador.cpf);
+        }
 
-      case "horario": if (!value) message = "Informe um horário"; break;
-      case "observacao": break;
-    }
+        const date = agendamentoEmEdicao.date;
 
-    setErrors((prev) => ({...prev, [name]: message,}));
-  }
+        setData(date.toISOString().split('T')[0]);
 
-  function validateAll() {
-    const newErrors: Record<string, string> = {};
+        setHorario(
+            date.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+            }),
+        );
+    }, [agendamentoEmEdicao, doadores]);
 
-    if (!doadorEncontrado) {
-      newErrors.doadorId = "Doador não encontrado";
-    }
+    function validateField(name: string, value: string) {
+        let message = '';
 
-    if (!agendamento.data) {
-      newErrors.data = "Informe uma data";
-    } else if (agendamento.data < hoje) {
-      newErrors.data = "Data não pode ser anterior à atual";
-    }
+        switch (name) {
+            case 'data':
+                if (!value) {
+                    message = 'Informe uma data';
+                } else if (value < hoje) {
+                    message = 'Data não pode ser anterior à atual';
+                }
+                break;
 
-    if (!agendamento.horario) {
-      newErrors.horario = "Informe um horário";
-    }
+            case 'horario':
+                if (!value) {
+                    message = 'Informe um horário';
+                }
+                break;
+        }
 
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-  }
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-    const { name, value } = e.target;
-
-    setAgendamento((prev) => ({...prev, [name]: value, }));
-
-    validateField(name, value);
-  }
-
-  function handleSubmit() {
-    if (!validateAll() || !doadorEncontrado) return;
-
-    const dadosAgendamento: Agendamento = {...agendamento, doadorId: doadorEncontrado.id, };
-
-    if (agendamentoEmEdicao) {
-      atualizarAgendamento(agendamentoEmEdicao.id, dadosAgendamento);
-
-      setAgendamentoEmEdicao(null);
-
-      showToast("Agendamento atualizado com sucesso!", "success", 4000);
-    } else {
-      addAgendamento({...dadosAgendamento, id: crypto.randomUUID(),});
-      showToast("Doação agendada com sucesso!", "success", 4000);
+        setErrors((prev) => ({
+            ...prev,
+            [name]: message,
+        }));
     }
 
-    setTimeout(() => { navigate("/agendamentos"); }, 1200);
-  }
+    function validateAll() {
+        const newErrors: Record<string, string> = {};
 
-  return (
-    <>
-      {toast && ( <Toast message={toast.message} type={toast.type} duration={toast.duration} /> )}
+        if (!doadorEncontrado) {
+            newErrors.doadorId = 'Doador não encontrado';
+        }
 
-      <div className="grid gap-4">
-        <div>
-          <label className="font-medium">CPF do Doador</label>
+        if (!data) {
+            newErrors.data = 'Informe uma data';
+        } else if (data < hoje) {
+            newErrors.data = 'Data não pode ser anterior à atual';
+        }
 
-          <IMaskInput
-            mask="000.000.000-00"
-            value={cpf}
-            onAccept={(value) => setCpf(value)}
-            className="border border-gray-300 p-3 rounded-xl w-full"
-          />
-          {errors.doadorId && ( <p className="text-red-500 text-sm">{errors.doadorId}</p> )}
-        </div>
+        if (!horario) {
+            newErrors.horario = 'Informe um horário';
+        }
 
-        {cpf.length === 14 && (
-          <>
-            {doadorEncontrado ? (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                <p className="font-semibold text-green-700 mb-2"> Doador encontrado </p>
+        setErrors(newErrors);
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <span className="text-gray-500 text-sm">Nome</span>
-                    <p className="font-medium">{doadorEncontrado.nome}</p>
-                  </div>
+        return Object.keys(newErrors).length === 0;
+    }
 
-                  <div>
-                    <span className="text-gray-500 text-sm">Tipo Sanguíneo</span>
-                    <p className="font-medium"> {doadorEncontrado.tipoSanguineo} {doadorEncontrado.fatorRh} </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                <p className="font-semibold text-yellow-700 mb-3"> Doador não encontrado </p>
+    function handleSubmit() {
+        if (!validateAll() || !doadorEncontrado) return;
 
-                <button
-                  type="button"
-                  onClick={() => navigate("/cadastro-doador")}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg" >
-                  Cadastrar Novo Doador
-                </button>
-              </div>
+        const date = new Date(`${data}T${horario}`);
+
+        const appointment: AppointmentDTO = {
+            id: agendamentoEmEdicao?.id ?? crypto.randomUUID(),
+            donor: doadorEncontrado,
+            date,
+            observations: agendamento.observations || null,
+            status: agendamentoEmEdicao?.status ?? Status.PENDING,
+        };
+
+        try {
+            if (agendamentoEmEdicao) {
+                atualizarAgendamento(appointment);
+
+                setAgendamentoEmEdicao(null);
+
+                showToast(
+                    'Agendamento atualizado com sucesso!',
+                    'success',
+                    3000,
+                );
+            } else {
+                addAgendamento(appointment);
+
+                showToast('Doação agendada com sucesso!', 'success', 3000);
+            }
+
+            setTimeout(() => navigate('/agendamentos'), 1200);
+        } catch (err: any) {
+            showToast(err.message, 'error', 3000);
+        }
+    }
+
+    return (
+        <>
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    duration={toast.duration}
+                />
             )}
-          </>
-        )}
 
-        {doadorEncontrado && (
-          <>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="font-medium">Data da Doação</label>
+            <div className='grid gap-4'>
+                <div>
+                    <label className='font-medium'>CPF do Doador</label>
 
-                <input
-                  type="date"
-                  name="data"
-                  min={hoje}
-                  value={agendamento.data}
-                  onChange={handleChange}
-                  className="border border-gray-300 p-3 rounded-xl w-full"
-                />
-                {errors.data && ( <p className="text-red-500 text-sm">{errors.data}</p> )}
-              </div>
+                    <IMaskInput
+                        mask='000.000.000-00'
+                        value={cpf}
+                        onAccept={(value) => setCpf(value)}
+                        className='border border-gray-300 p-3 rounded-xl w-full'
+                    />
 
-              <div>
-                <label className="font-medium">Horário</label>
+                    {errors.doadorId && (
+                        <p className='text-red-500 text-sm'>
+                            {errors.doadorId}
+                        </p>
+                    )}
+                </div>
 
-                <input
-                  type="time"
-                  name="horario"
-                  value={agendamento.horario}
-                  onChange={handleChange}
-                  className="border border-gray-300 p-3 rounded-xl w-full"
-                />
-                {errors.horario && ( <p className="text-red-500 text-sm">{errors.horario}</p> )}
-              </div>
+                {cpf.length === 14 && (
+                    <>
+                        {doadorEncontrado ? (
+                            <div className='bg-green-50 border border-green-200 rounded-xl p-4'>
+                                <p className='font-semibold text-green-700 mb-2'>
+                                    Doador encontrado
+                                </p>
+
+                                <div className='grid grid-cols-2 gap-2'>
+                                    <div>
+                                        <span className='text-gray-500 text-sm'>
+                                            Nome
+                                        </span>
+
+                                        <p className='font-medium'>
+                                            {doadorEncontrado.name}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <span className='text-gray-500 text-sm'>
+                                            Tipo Sanguíneo
+                                        </span>
+
+                                        <p className='font-medium'>
+                                            {doadorEncontrado.bloodType.type}
+                                            {
+                                                doadorEncontrado.bloodType
+                                                    .rhFactor
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className='bg-yellow-50 border border-yellow-200 rounded-xl p-4'>
+                                <p className='font-semibold text-yellow-700 mb-3'>
+                                    Doador não encontrado
+                                </p>
+
+                                <button
+                                    type='button'
+                                    onClick={() => navigate('/cadastro-doador')}
+                                    className='bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg'
+                                >
+                                    Cadastrar Novo Doador
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {doadorEncontrado && (
+                    <>
+                        <div className='grid grid-cols-2 gap-4'>
+                            <div>
+                                <label className='font-medium'>
+                                    Data da Doação
+                                </label>
+
+                                <input
+                                    type='date'
+                                    min={hoje}
+                                    value={data}
+                                    onChange={(e) => {
+                                        setData(e.target.value);
+                                        validateField('data', e.target.value);
+                                    }}
+                                    className='border border-gray-300 p-3 rounded-xl w-full'
+                                />
+
+                                {errors.data && (
+                                    <p className='text-red-500 text-sm'>
+                                        {errors.data}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className='font-medium'>Horário</label>
+
+                                <input
+                                    type='time'
+                                    value={horario}
+                                    onChange={(e) => {
+                                        setHorario(e.target.value);
+                                        validateField(
+                                            'horario',
+                                            e.target.value,
+                                        );
+                                    }}
+                                    className='border border-gray-300 p-3 rounded-xl w-full'
+                                />
+
+                                {errors.horario && (
+                                    <p className='text-red-500 text-sm'>
+                                        {errors.horario}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className='font-medium'>Observação</label>
+
+                            <textarea
+                                rows={4}
+                                value={agendamento.observations}
+                                onChange={(e) =>
+                                    setAgendamento({
+                                        observations: e.target.value,
+                                    })
+                                }
+                                className='border border-gray-300 p-3 rounded-xl w-full'
+                            />
+                        </div>
+
+                        <button
+                            onClick={handleSubmit}
+                            className='bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-semibold'
+                        >
+                            {agendamentoEmEdicao
+                                ? 'Atualizar Agendamento'
+                                : 'Agendar Doação'}
+                        </button>
+                    </>
+                )}
             </div>
-
-            <div>
-              <label className="font-medium">Observação</label>
-
-              <textarea
-                name="observacao"
-                value={agendamento.observacao}
-                onChange={handleChange}
-                rows={4}
-                className="border border-gray-300 p-3 rounded-xl w-full"
-              />
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              className="bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-semibold" >
-              {agendamentoEmEdicao ? "Atualizar Agendamento" : "Agendar Doação"}
-            </button>
-          </>
-        )}
-      </div>
-    </>
-  );
+        </>
+    );
 }

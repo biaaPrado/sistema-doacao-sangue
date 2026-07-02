@@ -52,15 +52,9 @@ export function DoadorProvider({ children }: { children: React.ReactNode }) {
     }
 
     function registrarDoacao(donation: DonationDTO) {
-        try {
-            // O método do system valida se o doador existe e se é elegível antes de criar
-            system.createDonation(donation);
-            carregarDoadores(); // Recarrega para trazer o histórico de doações atualizado nas propriedades do doador
-        } catch (error: any) {
-            // Captura os erros de elegibilidade jogados pelo EligibilityService no backend
-            alert(error.message);
-            console.error('Erro ao registrar doação:', error);
-        }
+        // O método do system valida se o doador existe e se é elegível antes de criar
+        system.createDonation(donation);
+        carregarDoadores(); // Recarrega para trazer o histórico de doações atualizado nas propriedades do doador
     }
 
     return (

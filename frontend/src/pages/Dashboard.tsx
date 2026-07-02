@@ -3,6 +3,8 @@ import { useDoadores } from '../context/DoadorContext';
 import { useAgendamentos } from '../context/AgendamentoContext';
 import { useEstoque } from '../context/EstoqueContext';
 
+import { Status } from '../../../backend/src/domain/enums/Status';
+
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -31,10 +33,12 @@ export function Dashboard() {
 
     const totalDoadores = doadores.length;
     const totalAgendamentos = agendamentos.length;
+
     const totalDoacoes = doadores.reduce(
-        (acc, d) => acc + (d.donations?.length || 0),
+        (acc, doador) => acc + doador.donations.length,
         0,
     );
+
     const totalBolsas = bolsas.length;
 
     const tipos = ['A', 'B', 'AB', 'O'];
@@ -43,9 +47,11 @@ export function Dashboard() {
         const positivos = doadores.filter(
             (d) => d.bloodType.type === tipo && d.bloodType.rhFactor === '+',
         ).length;
+
         const negativos = doadores.filter(
             (d) => d.bloodType.type === tipo && d.bloodType.rhFactor === '-',
         ).length;
+
         return { positivos, negativos };
     });
 
@@ -69,15 +75,20 @@ export function Dashboard() {
         scales: {
             y: {
                 beginAtZero: true,
-                ticks: { stepSize: 1, precision: 0 },
+                ticks: {
+                    stepSize: 1,
+                    precision: 0,
+                },
             },
         },
     };
 
     const estoqueCritico = bolsas.reduce(
         (acc: Record<string, number>, bolsa) => {
-            const tipo = bolsa.bloodType.type;
+            const tipo = `${bolsa.bloodType.type}${bolsa.bloodType.rhFactor}`;
+
             acc[tipo] = (acc[tipo] || 0) + (bolsa.available ? 1 : 0);
+
             return acc;
         },
         {},
@@ -88,17 +99,9 @@ export function Dashboard() {
     );
 
     const proximosAgendamentos = [...agendamentos]
-        .filter((a) => a.status === 'Agendada')
-        .sort(
-            (a, b) =>
-                new Date(`${a.data}T${a.horario}`).getTime() -
-                new Date(`${b.data}T${b.horario}`).getTime(),
-        )
+        .filter((a) => a.status === Status.PENDING)
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
         .slice(0, 5);
-
-    function getNomeDoador(id: string) {
-        return doadores.find((d) => d.id === id)?.name || 'Desconhecido';
-    }
 
     return (
         <MainLayout>
@@ -107,7 +110,7 @@ export function Dashboard() {
                     <Card title='Total de Doações' value={totalDoacoes} />
                     <Card title='Total de Doadores' value={totalDoadores} />
                     <Card title='Agendamentos' value={totalAgendamentos} />
-                    <Card title='Bolsa em Estoque' value={totalBolsas} />
+                    <Card title='Bolsas em Estoque' value={totalBolsas} />
                 </div>
 
                 <div className='grid grid-cols-3 gap-6'>
@@ -115,6 +118,7 @@ export function Dashboard() {
                         <h1 className='mb-4 text-gray-700 font-medium'>
                             Doações por Tipo Sanguíneo
                         </h1>
+
                         <Bar data={chartData} options={options} />
                     </div>
 
@@ -130,6 +134,7 @@ export function Dashboard() {
                                     className='flex justify-between border-b border-gray-300 pb-1'
                                 >
                                     <span>{tipo}</span>
+
                                     <span
                                         className={
                                             qtd <= 2
@@ -137,8 +142,7 @@ export function Dashboard() {
                                                 : ''
                                         }
                                     >
-                                        {' '}
-                                        {qtd} bolsas{' '}
+                                        {qtd} bolsas
                                     </span>
                                 </li>
                             ))}
@@ -159,26 +163,35 @@ export function Dashboard() {
                         <>
                             <div className='grid grid-cols-3 bg-red-700 text-white font-semibold rounded-t-xl'>
                                 <div className='p-3 text-center'>Data</div>
+
                                 <div className='p-3 text-center'>Horário</div>
+
                                 <div className='p-3 text-center'>Nome</div>
                             </div>
 
-                            {proximosAgendamentos.map((a) => (
+                            {proximosAgendamentos.map((agendamento) => (
                                 <div
-                                    key={a.id}
+                                    key={agendamento.id}
                                     className='grid grid-cols-3 border-b border-gray-200 hover:bg-gray-50'
                                 >
                                     <div className='p-3 text-center'>
-                                        {' '}
-                                        {a.data}{' '}
+                                        {agendamento.date.toLocaleDateString(
+                                            'pt-BR',
+                                        )}
                                     </div>
+
                                     <div className='p-3 text-center'>
-                                        {' '}
-                                        {a.horario}{' '}
+                                        {agendamento.date.toLocaleTimeString(
+                                            'pt-BR',
+                                            {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            },
+                                        )}
                                     </div>
+
                                     <div className='p-3 text-center'>
-                                        {' '}
-                                        {getNomeDoador(a.doadorId)}{' '}
+                                        {agendamento.donor.name}
                                     </div>
                                 </div>
                             ))}

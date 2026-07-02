@@ -35,7 +35,7 @@ export function DoadorDetalhe() {
                     <div>
                         <h1 className='text-2xl font-bold text-red-700'>
                             {' '}
-                            {doador.weight}{' '}
+                            {doador.name}{' '}
                         </h1>
                         <p className='text-gray-500'> Detalhes do doador </p>
                     </div>

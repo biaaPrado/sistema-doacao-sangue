@@ -209,6 +209,7 @@ export default class HemocenterSystem {
             appointment.getDate(),
         );
 
+        donor.addDonation(donation);
         this.donationService.addDonation(donation);
 
         const bag = new BloodBag(

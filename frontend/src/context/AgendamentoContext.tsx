@@ -1,45 +1,66 @@
-import { createContext, useContext, useEffect, useState, type ReactNode, } from "react";
-import type { Agendamento } from "../types/Agendamento";
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+import type { AppointmentDTO } from '../../../backend/src/domain/dtos/AppointmentDTO';
+import { system } from '../system/system';
 
 interface AgendamentoContextType {
-    agendamentos: Agendamento[];
-    addAgendamento: (agendamento: Agendamento) => void;
-    
-    atualizarAgendamento: (id: string, agendamentoAtualizado: Agendamento) => void;
+    agendamentos: AppointmentDTO[];
+
+    addAgendamento: (agendamento: AppointmentDTO) => void;
+    atualizarAgendamento: (agendamento: AppointmentDTO) => void;
     removerAgendamento: (id: string) => void;
     concluirAgendamento: (id: string) => void;
 
-    agendamentoEmEdicao: Agendamento | null;
-    setAgendamentoEmEdicao: (agendamento: Agendamento | null) => void;
+    carregarAgendamentos: () => void;
+
+    agendamentoEmEdicao: AppointmentDTO | null;
+    setAgendamentoEmEdicao: (agendamento: AppointmentDTO | null) => void;
 }
 
-const AgendamentoContext = createContext< AgendamentoContextType | undefined >(undefined);
+const AgendamentoContext = createContext<AgendamentoContextType | null>(null);
 
-export function AgendamentoProvider({children,}: { children: ReactNode; }) {
-    const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
-    const [agendamentoEmEdicao, setAgendamentoEmEdicao] = useState<Agendamento | null>(null);
+export function AgendamentoProvider({ children }: { children: ReactNode }) {
+    const [agendamentos, setAgendamentos] = useState<AppointmentDTO[]>([]);
+    const [agendamentoEmEdicao, setAgendamentoEmEdicao] =
+        useState<AppointmentDTO | null>(null);
 
-    useEffect(() => { const dadosSalvos = localStorage.getItem("agendamentos");
-
-    if (dadosSalvos) { setAgendamentos(JSON.parse(dadosSalvos)); } }, []);
-
-    useEffect(() => { localStorage.setItem("agendamentos", JSON.stringify(agendamentos)); }, [agendamentos]);
-
-    function addAgendamento(agendamento: Agendamento) {
-        setAgendamentos((prev) => [...prev, agendamento]);
+    function carregarAgendamentos() {
+        setAgendamentos(system.getAppointments());
     }
 
-    function atualizarAgendamento(id: string, agendamentoAtualizado: Agendamento) {
-        setAgendamentos((prev) => prev.map((agendamento) => agendamento.id === id ? agendamentoAtualizado : agendamento));
+    useEffect(() => {
+        carregarAgendamentos();
+    }, []);
+
+    function addAgendamento(agendamento: AppointmentDTO) {
+        system.createAppointment(agendamento);
+        carregarAgendamentos();
+    }
+
+    function atualizarAgendamento(agendamento: AppointmentDTO) {
+        system.updateAppointment(agendamento);
+        carregarAgendamentos();
     }
 
     function removerAgendamento(id: string) {
-        setAgendamentos((prev) => prev.filter((agendamento) => agendamento.id !== id));
+        try {
+            system.removeAppointment(id);
+            carregarAgendamentos();
+        } catch (error) {
+            console.error('Erro ao remover agendamento:', error);
+            throw error;
+        }
     }
 
     function concluirAgendamento(id: string) {
-        setAgendamentos((prev) => prev.map((ag) => ag.id === id ? { ...ag, status: "Concluída" } : ag ));
-}
+        try {
+            system.completeAppointment(id);
+            carregarAgendamentos();
+        } catch (error) {
+            console.error('Erro ao concluir agendamento:', error);
+            throw error;
+        }
+    }
 
     return (
         <AgendamentoContext.Provider
@@ -49,10 +70,12 @@ export function AgendamentoProvider({children,}: { children: ReactNode; }) {
                 atualizarAgendamento,
                 removerAgendamento,
                 concluirAgendamento,
+                carregarAgendamentos,
                 agendamentoEmEdicao,
                 setAgendamentoEmEdicao,
             }}
-        > {children}
+        >
+            {children}
         </AgendamentoContext.Provider>
     );
 }
@@ -61,7 +84,9 @@ export function useAgendamentos() {
     const context = useContext(AgendamentoContext);
 
     if (!context) {
-        throw new Error("useAgendamentos deve ser usado dentro de um AgendamentoProvider");
+        throw new Error(
+            'useAgendamentos deve ser usado dentro de um AgendamentoProvider',
+        );
     }
 
     return context;
