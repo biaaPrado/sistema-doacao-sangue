@@ -1,41 +1,43 @@
-import { createContext, useContext, useState } from "react";
-import type { BolsaSangue } from "../types/BolsaSangue";
-import { mockBolsas } from "../mocks/mockBolsas";
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { BloodBagDTO } from '../../../backend/src/domain/dtos/BloodBagDTO';
+import { system } from '../system/system';
 
 interface EstoqueContextType {
-  bolsas: BolsaSangue[];
-
-  adicionarBolsa: (bolsa: BolsaSangue) => void;
-  removerBolsa: (id: string) => void;
+    bolsas: BloodBagDTO[];
+    carregarEstoque: () => void;
 }
 
 const EstoqueContext = createContext<EstoqueContextType | null>(null);
 
-export function EstoqueProvider({children,}: {children: React.ReactNode;}) {
-  //const [bolsas, setBolsas] = useState<BolsaSangue[]>([]);
-  const [ bolsas, setBolsas ] = useState<BolsaSangue[]>(mockBolsas);
+export function EstoqueProvider({ children }: { children: React.ReactNode }) {
+    const [bolsas, setBolsas] = useState<BloodBagDTO[]>([]);
 
-  function adicionarBolsa(bolsa: BolsaSangue) {
-    setBolsas((prev) => [...prev, bolsa]);
-  }
+    function carregarEstoque() {
+        setBolsas(system.getStock());
+    }
 
-  function removerBolsa(id: string) {
-    setBolsas((prev) => prev.filter((bolsa) => bolsa.id !== id));
-  }
+    useEffect(() => {
+        carregarEstoque();
+    }, []);
 
-  return (
-    <EstoqueContext.Provider value={{ bolsas, adicionarBolsa, removerBolsa,}} >
-      {children}
-    </EstoqueContext.Provider>
-  );
+    return (
+        <EstoqueContext.Provider
+            value={{
+                bolsas,
+                carregarEstoque,
+            }}
+        >
+            {children}
+        </EstoqueContext.Provider>
+    );
 }
 
 export function useEstoque() {
-  const context = useContext(EstoqueContext);
-  
-  if (!context) {
-    throw new Error("useEstoque precisa estar dentro do EstoqueProvider");
-  }
+    const context = useContext(EstoqueContext);
 
-  return context;
+    if (!context) {
+        throw new Error('useEstoque precisa estar dentro do EstoqueProvider');
+    }
+
+    return context;
 }

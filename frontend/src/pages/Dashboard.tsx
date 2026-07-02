@@ -76,8 +76,8 @@ export function Dashboard() {
 
     const estoqueCritico = bolsas.reduce(
         (acc: Record<string, number>, bolsa) => {
-            const tipo = bolsa.tipoSanguineo;
-            acc[tipo] = (acc[tipo] || 0) + (bolsa.disponivel ? 1 : 0);
+            const tipo = bolsa.bloodType.type;
+            acc[tipo] = (acc[tipo] || 0) + (bolsa.available ? 1 : 0);
             return acc;
         },
         {},
