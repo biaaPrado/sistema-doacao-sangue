@@ -8,7 +8,7 @@ export default class HospitalService {
     public addHospital(dto: HospitalDTO): void {
         const hospital = HospitalMapper.toEnitity(dto);
 
-        if (this.hospitalExists(hospital.getCnpj())) {
+        if (this.findByCnpj(hospital.getCnpj())) {
             throw new Error('Já existe um hospital com esse CNPJ.');
         }
         this.hospitals.push(hospital);

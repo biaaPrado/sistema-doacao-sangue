@@ -1,34 +1,52 @@
-import { createContext, useContext, useState } from "react";
-import type { Hospital } from "../types/Hospital";
-import { mockHospitais } from "../mocks/mockHospitais";
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { HospitalDTO } from '../../../backend/src/domain/dtos/HospitalDTO';
+import { system } from '../system/system';
 
 interface HospitalContextType {
-  hospitais: Hospital[];
+    hospitais: HospitalDTO[];
 
-  addHospital: (hospital: Hospital) => void;
-  removerHospital: (id: string) => void;
-  atualizarHospital: (id: string, hospital: Hospital) => void;
-  hospitalEmEdicao: Hospital | null;
-  setHospitalEmEdicao: ( hospital: Hospital | null ) => void;
+    addHospital: (hospital: HospitalDTO) => void;
+    removerHospital: (id: string) => void;
+    atualizarHospital: (hospital: HospitalDTO) => void;
+
+    hospitalEmEdicao: HospitalDTO | null;
+    setHospitalEmEdicao: (hospital: HospitalDTO | null) => void;
 }
 
 const HospitalContext = createContext<HospitalContextType | null>(null);
 
-export function HospitalProvider({ children, }: { children: React.ReactNode; }) {
-    //const [hospitais, setHospitais] = useState<Hospital[]>([]);
-    const [hospitais, setHospitais] = useState<Hospital[]>(mockHospitais);
-    const [hospitalEmEdicao, setHospitalEmEdicao, ] = useState<Hospital | null>(null);
+export function HospitalProvider({ children }: { children: React.ReactNode }) {
+    const [hospitais, setHospitais] = useState<HospitalDTO[]>([]);
+    const [hospitalEmEdicao, setHospitalEmEdicao] =
+        useState<HospitalDTO | null>(null);
 
-    function addHospital(hospital: Hospital) {
-        setHospitais((prev) => [...prev,hospital,]);
+    const carregarHospitais = () => {
+        const todos = system.getAllHospitals();
+        setHospitais(todos);
+    };
+
+    useEffect(() => {
+        carregarHospitais();
+    }, []);
+
+    function addHospital(hospital: HospitalDTO) {
+        system.createHospital(hospital);
+        carregarHospitais();
     }
 
     function removerHospital(id: string) {
-        setHospitais((prev) => prev.filter((h) => h.id !== id));
+        try {
+            system.removeHospital(id);
+            carregarHospitais();
+        } catch (error) {
+            console.error('Erro ao remover hospital:', error);
+            throw error;
+        }
     }
 
-    function atualizarHospital(id: string, hospital: Hospital) {
-        setHospitais((prev) => prev.map((h) => h.id === id ? hospital : h));
+    function atualizarHospital(hospital: HospitalDTO) {
+        system.updateHospital(hospital);
+        carregarHospitais();
     }
 
     return (
@@ -41,15 +59,18 @@ export function HospitalProvider({ children, }: { children: React.ReactNode; }) 
                 hospitalEmEdicao,
                 setHospitalEmEdicao,
             }}
-        > {children}
+        >
+            {children}
         </HospitalContext.Provider>
     );
 }
 
 export function useHospitais() {
     const context = useContext(HospitalContext);
+
     if (!context) {
-        throw new Error("useHospitais deve estar dentro do HospitalProvider");
+        throw new Error('useHospitais deve estar dentro do HospitalProvider');
     }
-  return context;
+
+    return context;
 }
