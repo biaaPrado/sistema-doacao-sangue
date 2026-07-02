@@ -1,125 +1,188 @@
-import { MainLayout } from "../layouts/MainLayout";
-import { useDoadores } from "../context/DoadorContext";
-import { useAgendamentos } from "../context/AgendamentoContext";
-import { useEstoque } from "../context/EstoqueContext";
+import { MainLayout } from '../layouts/MainLayout';
+import { useDoadores } from '../context/DoadorContext';
+import { useAgendamentos } from '../context/AgendamentoContext';
+import { useEstoque } from '../context/EstoqueContext';
 
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+} from 'chart.js';
 
-import { Bar } from "react-chartjs-2";
+import { Bar } from 'react-chartjs-2';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+);
 
 export function Dashboard() {
     const { doadores } = useDoadores();
     const { agendamentos } = useAgendamentos();
-    const { bolsas } = useEstoque(); 
+    const { bolsas } = useEstoque();
 
     const totalDoadores = doadores.length;
     const totalAgendamentos = agendamentos.length;
-    const totalDoacoes = doadores.reduce((acc, d) => acc + (d.historicoDoacoes?.length || 0), 0);
+    const totalDoacoes = doadores.reduce(
+        (acc, d) => acc + (d.donations?.length || 0),
+        0,
+    );
     const totalBolsas = bolsas.length;
 
-    const tipos = ["A", "B", "AB", "O"];
+    const tipos = ['A', 'B', 'AB', 'O'];
 
     const dataPorTipo = tipos.map((tipo) => {
-        const positivos = doadores.filter((d) => d.tipoSanguineo === tipo && d.fatorRh === "+").length;
-        const negativos = doadores.filter((d) => d.tipoSanguineo === tipo && d.fatorRh === "-").length;
+        const positivos = doadores.filter(
+            (d) => d.bloodType.type === tipo && d.bloodType.rhFactor === '+',
+        ).length;
+        const negativos = doadores.filter(
+            (d) => d.bloodType.type === tipo && d.bloodType.rhFactor === '-',
+        ).length;
         return { positivos, negativos };
     });
 
     const chartData = {
         labels: tipos,
-        datasets: [{
-            label: "RH +",
-            data: dataPorTipo.map((d) => d.positivos),
-            backgroundColor: "#ef4444",
-        },{
-            label: "RH -",
-            data: dataPorTipo.map((d) => d.negativos),
-            backgroundColor: "#3b82f6",
-        },],
+        datasets: [
+            {
+                label: 'RH +',
+                data: dataPorTipo.map((d) => d.positivos),
+                backgroundColor: '#ef4444',
+            },
+            {
+                label: 'RH -',
+                data: dataPorTipo.map((d) => d.negativos),
+                backgroundColor: '#3b82f6',
+            },
+        ],
     };
 
-    const options = { scales: {
-        y: {
-            beginAtZero: true,
-            ticks: { stepSize: 1, precision: 0,
-        },},
-    },
-};
-    
-    const estoqueCritico = bolsas.reduce((acc: Record<string, number>, bolsa) => {
-        const tipo = bolsa.tipoSanguineo;
-        acc[tipo] = (acc[tipo] || 0) + (bolsa.disponivel ? 1 : 0);
-        return acc;
-    }, {});
+    const options = {
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1, precision: 0 },
+            },
+        },
+    };
 
-    const rankingEstoque = Object.entries(estoqueCritico).sort((a, b) => a[1] - b[1]);
+    const estoqueCritico = bolsas.reduce(
+        (acc: Record<string, number>, bolsa) => {
+            const tipo = bolsa.tipoSanguineo;
+            acc[tipo] = (acc[tipo] || 0) + (bolsa.disponivel ? 1 : 0);
+            return acc;
+        },
+        {},
+    );
 
-    const proximosAgendamentos = [...agendamentos].filter((a) => a.status === "Agendada")
-        .sort((a, b) => new Date(`${a.data}T${a.horario}`).getTime() - new Date(`${b.data}T${b.horario}`).getTime()).slice(0, 5);
+    const rankingEstoque = Object.entries(estoqueCritico).sort(
+        (a, b) => a[1] - b[1],
+    );
+
+    const proximosAgendamentos = [...agendamentos]
+        .filter((a) => a.status === 'Agendada')
+        .sort(
+            (a, b) =>
+                new Date(`${a.data}T${a.horario}`).getTime() -
+                new Date(`${b.data}T${b.horario}`).getTime(),
+        )
+        .slice(0, 5);
 
     function getNomeDoador(id: string) {
-        return doadores.find((d) => d.id === id)?.nome || "Desconhecido";
+        return doadores.find((d) => d.id === id)?.name || 'Desconhecido';
     }
 
     return (
         <MainLayout>
-            <div className="max-w-7xl mx-auto bg-white p-8 rounded-2xl shadow-lg space-y-6">
-                <div className="grid grid-cols-4 gap-4 font-medium">
-                    <Card title="Total de Doações" value={totalDoacoes} />
-                    <Card title="Total de Doadores" value={totalDoadores} />
-                    <Card title="Agendamentos" value={totalAgendamentos} />
-                    <Card title="Bolsa em Estoque" value={totalBolsas} />
+            <div className='max-w-7xl mx-auto bg-white p-8 rounded-2xl shadow-lg space-y-6'>
+                <div className='grid grid-cols-4 gap-4 font-medium'>
+                    <Card title='Total de Doações' value={totalDoacoes} />
+                    <Card title='Total de Doadores' value={totalDoadores} />
+                    <Card title='Agendamentos' value={totalAgendamentos} />
+                    <Card title='Bolsa em Estoque' value={totalBolsas} />
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
-                    <div className="col-span-2 bg-white p-4 rounded-xl shadow-lg">
-                        <h1 className="mb-4 text-gray-700 font-medium">Doações por Tipo Sanguíneo</h1>
+                <div className='grid grid-cols-3 gap-6'>
+                    <div className='col-span-2 bg-white p-4 rounded-xl shadow-lg'>
+                        <h1 className='mb-4 text-gray-700 font-medium'>
+                            Doações por Tipo Sanguíneo
+                        </h1>
                         <Bar data={chartData} options={options} />
                     </div>
 
-                    <div className="col-span-1 bg-white p-4 rounded-xl shadow-lg">
-                        <h1 className="text-gray-700 font-medium mb-4">Estoque Crítico</h1>
+                    <div className='col-span-1 bg-white p-4 rounded-xl shadow-lg'>
+                        <h1 className='text-gray-700 font-medium mb-4'>
+                            Estoque Crítico
+                        </h1>
 
-                        <ul className="space-y-2">
+                        <ul className='space-y-2'>
                             {rankingEstoque.map(([tipo, qtd]) => (
-                            <li key={tipo} className="flex justify-between border-b border-gray-300 pb-1" >
-                                <span>{tipo}</span>
-                                <span className={qtd <= 2 ? "text-red-600 font-bold" : ""}> {qtd} bolsas </span>
-                            </li>
+                                <li
+                                    key={tipo}
+                                    className='flex justify-between border-b border-gray-300 pb-1'
+                                >
+                                    <span>{tipo}</span>
+                                    <span
+                                        className={
+                                            qtd <= 2
+                                                ? 'text-red-600 font-bold'
+                                                : ''
+                                        }
+                                    >
+                                        {' '}
+                                        {qtd} bolsas{' '}
+                                    </span>
+                                </li>
                             ))}
                         </ul>
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl shadow-lg">
-                    <h2 className="text-gray-700 font-medium mb-4">Próximos Agendamentos</h2>
+                <div className='bg-white p-4 rounded-xl shadow-lg'>
+                    <h2 className='text-gray-700 font-medium mb-4'>
+                        Próximos Agendamentos
+                    </h2>
 
-                    {proximosAgendamentos.length === 0 ? ( <p className="text-gray-500">Nenhum agendamento próximo</p>) : (
-                    <>
-                        <div className="grid grid-cols-3 bg-red-700 text-white font-semibold rounded-t-xl">
-                            <div className="p-3 text-center">Data</div>
-                            <div className="p-3 text-center">Horário</div>
-                            <div className="p-3 text-center">Nome</div>
-                        </div>
+                    {proximosAgendamentos.length === 0 ? (
+                        <p className='text-gray-500'>
+                            Nenhum agendamento próximo
+                        </p>
+                    ) : (
+                        <>
+                            <div className='grid grid-cols-3 bg-red-700 text-white font-semibold rounded-t-xl'>
+                                <div className='p-3 text-center'>Data</div>
+                                <div className='p-3 text-center'>Horário</div>
+                                <div className='p-3 text-center'>Nome</div>
+                            </div>
 
-                    {proximosAgendamentos.map((a) => (
-                        <div key={a.id} className="grid grid-cols-3 border-b border-gray-200 hover:bg-gray-50" >
-                            <div className="p-3 text-center"> {a.data} </div>
-                            <div className="p-3 text-center"> {a.horario} </div>
-                            <div className="p-3 text-center"> {getNomeDoador(a.doadorId)} </div>
-                        </div>
-                    ))}
-                    </>
+                            {proximosAgendamentos.map((a) => (
+                                <div
+                                    key={a.id}
+                                    className='grid grid-cols-3 border-b border-gray-200 hover:bg-gray-50'
+                                >
+                                    <div className='p-3 text-center'>
+                                        {' '}
+                                        {a.data}{' '}
+                                    </div>
+                                    <div className='p-3 text-center'>
+                                        {' '}
+                                        {a.horario}{' '}
+                                    </div>
+                                    <div className='p-3 text-center'>
+                                        {' '}
+                                        {getNomeDoador(a.doadorId)}{' '}
+                                    </div>
+                                </div>
+                            ))}
+                        </>
                     )}
                 </div>
             </div>
@@ -127,12 +190,11 @@ export function Dashboard() {
     );
 }
 
-
 function Card({ title, value }: { title: string; value: number }) {
     return (
-        <div className="bg-white p-4 rounded-xl shadow">
-            <p className="text-gray-500">{title}</p>
-            <p className="text-2xl font-bold text-red-600">{value}</p>
+        <div className='bg-white p-4 rounded-xl shadow'>
+            <p className='text-gray-500'>{title}</p>
+            <p className='text-2xl font-bold text-red-600'>{value}</p>
         </div>
     );
 }
