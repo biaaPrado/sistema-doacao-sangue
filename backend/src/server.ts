@@ -6,13 +6,16 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+const allowedOrigin = process.env.FRONTEND_URL;
+
+app.use(cors(allowedOrigin ? { origin: allowedOrigin } : {}));
 app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("API funcionando");
 });
 
-app.listen(3000, () => {
-  console.log("Servidor rodando na porta 3000");
+const PORT = Number(process.env.PORT) || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
