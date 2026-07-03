@@ -1,0 +1,88 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Donor {
+  id           String        @id @default(uuid())
+  name         String
+  cpf          String        @unique
+  phone        String
+  email        String        @unique
+  birthDate    DateTime
+  sex          String        // Valores: 'Masculino', 'Feminino', 'Outro'
+  weight       Float
+  bloodTypeId  String
+  bloodType    BloodType     @relation(fields: [bloodTypeId], references: [id])
+  donations    Donation[]
+  appointments Appointment[]
+}
+
+model BloodType {
+  id       String         @id @default(uuid())
+  type     String         // A, B, AB, O
+  rhFactor String         // +, -
+  donors   Donor[]
+  bags     BloodBag[]
+  requests BloodRequest[]
+}
+
+model Donation {
+  id           String   @id @default(uuid())
+  donorId      String
+  donor        Donor    @relation(fields: [donorId], references: [id])
+  volume       Float
+  donationDate DateTime @default(now())
+}
+
+model Appointment {
+  id           String   @id @default(uuid())
+  donorId      String
+  donor        Donor    @relation(fields: [donorId], references: [id])
+  date         DateTime
+  observations String?
+  status       String   // Valores: 'Pendente', 'Concluído', 'Cancelado'
+}
+
+model Hospital {
+  id         String         @id @default(uuid())
+  name       String
+  cnpj       String         @unique
+  phone      String
+  email      String
+  cep        String
+  address    String
+  number     String
+  complement String?
+  city       String
+  state      String
+  requests   BloodRequest[]
+}
+
+model BloodRequest {
+  id           String    @id @default(uuid())
+  hospitalId   String
+  hospital     Hospital  @relation(fields: [hospitalId], references: [id])
+  requestDate  DateTime  @default(now())
+  bloodTypeId  String
+  bloodType    BloodType @relation(fields: [bloodTypeId], references: [id])
+  quantity     Int
+  priority     String    // Valores: 'Baixa', 'Média', 'Alta', 'Urgente'
+  status       String    // Valores: 'Pendente', 'Concluído', 'Cancelado'
+  observations String?
+}
+
+model BloodBag {
+  id             String    @id @default(uuid())
+  bloodTypeId    String
+  bloodType      BloodType @relation(fields: [bloodTypeId], references: [id])
+  collectionDate DateTime
+  expirationDate DateTime
+  volume         Float
+  available      Boolean   @default(true)
+}
