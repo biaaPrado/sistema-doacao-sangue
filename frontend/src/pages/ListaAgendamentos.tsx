@@ -105,83 +105,97 @@ export function ListaAgendamentos() {
                             <div className='p-3 text-center'>Ações</div>
                         </div>
 
-                        {agendamentosFiltrados.map((agendamento) => (
-                            <div
-                                key={agendamento.id}
-                                className='grid grid-cols-4 border-b border-gray-200 hover:bg-gray-50'
-                            >
-                                <div className='p-3 text-center'>
-                                    {agendamento.donor.name}
-                                </div>
+                        {agendamentosFiltrados.map((agendamento) => {
+                            const podeConcluir =
+                                new Date(agendamento.date).setHours(
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                ) <= new Date().setHours(0, 0, 0, 0);
+                            return (
+                                <div
+                                    key={agendamento.id}
+                                    className='grid grid-cols-4 border-b border-gray-200 hover:bg-gray-50'
+                                >
+                                    <div className='p-3 text-center'>
+                                        {agendamento.donor.name}
+                                    </div>
 
-                                <div className='p-3 text-center'>
-                                    {agendamento.date.toLocaleDateString(
-                                        'pt-BR',
-                                    )}{' '}
-                                    -{' '}
-                                    {agendamento.date.toLocaleTimeString(
-                                        'pt-BR',
-                                        {
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                        },
-                                    )}
-                                </div>
+                                    <div className='p-3 text-center'>
+                                        {agendamento.date.toLocaleDateString(
+                                            'pt-BR',
+                                        )}{' '}
+                                        -{' '}
+                                        {agendamento.date.toLocaleTimeString(
+                                            'pt-BR',
+                                            {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            },
+                                        )}
+                                    </div>
 
-                                <div className='p-3 text-center'>
-                                    <span
-                                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                            agendamento.status ===
-                                            Status.COMPLETED
-                                                ? 'bg-green-100 text-green-700'
-                                                : agendamento.status ===
-                                                    Status.CANCELED
-                                                  ? 'bg-red-100 text-red-700'
-                                                  : 'bg-yellow-100 text-yellow-700'
-                                        }`}
-                                    >
-                                        {agendamento.status}
-                                    </span>
-                                </div>
-
-                                <div className='p-3 flex justify-center gap-2'>
-                                    {agendamento.status === Status.PENDING && (
-                                        <button
-                                            onClick={() =>
-                                                concluir(agendamento.id)
-                                            }
-                                            className='bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700'
-                                            disabled={
-                                                new Date(
-                                                    agendamento.date,
-                                                ).setHours(0, 0, 0, 0) >
-                                                new Date().setHours(0, 0, 0, 0)
-                                            }
+                                    <div className='p-3 text-center'>
+                                        <span
+                                            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                                agendamento.status ===
+                                                Status.COMPLETED
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : agendamento.status ===
+                                                        Status.CANCELED
+                                                      ? 'bg-red-100 text-red-700'
+                                                      : 'bg-yellow-100 text-yellow-700'
+                                            }`}
                                         >
-                                            Concluir
-                                        </button>
-                                    )}
+                                            {agendamento.status}
+                                        </span>
+                                    </div>
 
-                                    <button
-                                        onClick={() =>
-                                            editarAgendamento(agendamento.id)
-                                        }
-                                        className='bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600'
-                                    >
-                                        Editar
-                                    </button>
+                                    <div className='p-3 flex justify-center gap-2'>
+                                        {agendamento.status ===
+                                            Status.PENDING && (
+                                            <button
+                                                onClick={() =>
+                                                    concluir(agendamento.id)
+                                                }
+                                                className={`text-white px-3 py-1 rounded-lg ${podeConcluir ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                                                disabled={!podeConcluir}
+                                            >
+                                                Concluir
+                                            </button>
+                                        )}
 
-                                    <button
-                                        onClick={() =>
-                                            abrirModalCancelar(agendamento.id)
-                                        }
-                                        className='bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700'
-                                    >
-                                        Cancelar
-                                    </button>
+                                        {agendamento.status ===
+                                            Status.PENDING && (
+                                            <>
+                                                <button
+                                                    onClick={() =>
+                                                        editarAgendamento(
+                                                            agendamento.id,
+                                                        )
+                                                    }
+                                                    className='bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600'
+                                                >
+                                                    Editar
+                                                </button>
+
+                                                <button
+                                                    onClick={() =>
+                                                        abrirModalCancelar(
+                                                            agendamento.id,
+                                                        )
+                                                    }
+                                                    className='bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700'
+                                                >
+                                                    Cancelar
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </>
                 )}
             </div>
